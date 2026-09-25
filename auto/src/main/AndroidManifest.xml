@@ -1,0 +1,15 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <meta-data android:name="com.google.android.gms.car.application" android:resource="@xml/automotive_app_desc" />
+        <meta-data android:name="androidx.car.app.minCarApiLevel" android:value="1" />
+        <!-- LAB ONLY. IOT is a host discovery surrogate, not a claim of category compliance.
+             app depends on this module exclusively in unsupportedDebug. -->
+        <service android:name="hu.elmdash.auto.DashboardCarService" android:exported="true"
+            android:label="ELM Dash • Auto Lab">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+                <category android:name="androidx.car.app.category.IOT" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>
