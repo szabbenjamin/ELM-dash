@@ -1,0 +1,27 @@
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.idea/
+*.iml
+*.jks
+*.keystore
+.DS_Store
+
+# Local credentials, generated deliverables and device diagnostics
+.env
+.env.*
+!.env.example
+*.apk
+*.aab
+*.apks
+*.zip
+*.log
+*.hprof
+*.pem
+*.p12
+keystore.properties
+work/
+artifacts/
+device-dumps/
+screenshots/
