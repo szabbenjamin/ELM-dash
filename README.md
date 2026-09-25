@@ -112,7 +112,7 @@ Egyszeri beállítás a **Kapcsolat** lapon:
 
 1. Párosítsd és válaszd ki az **OBD-adaptert**. A választás azonnal mentődik; nem kell a Kapcsolódás gombot megnyomni a mentéshez.
 2. Az **Automatikus OBD-kapcsolat** maradjon bekapcsolva. A `mediaDebug` frissítése ezt egyszer alapból bekapcsolja; a későbbi kikapcsolást tiszteletben tartja.
-3. Az **Autós fejegység Bluetooth-eszköze** alatt válaszd a Carpuride-ot (a teszttelefonon `W113-01e20b`). Ez az ébresztőeszköz, nem az OBD-adapter. Más Bluetooth-eszközök csatlakozása nem indít olvasást.
+3. Az **Autós fejegység Bluetooth-eszköze** alatt válaszd a Carpuride-ot (a teszttelefonon `W113`). Ez az ébresztőeszköz, nem az OBD-adapter. Más Bluetooth-eszközök csatlakozása nem indít olvasást.
 4. **Automatikus háttérkapcsolat engedélyezése** → a rendszer akkumulátor-korlátozás alóli kivételének engedélyezése. A Közeli eszközök és az értesítések engedélye is szükséges az olvasáshoz, illetve a figyelmeztetéshez. A beállítás nem kapcsolja be helyetted a Bluetooth-t.
 
 Működés:
