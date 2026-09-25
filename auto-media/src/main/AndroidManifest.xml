@@ -1,0 +1,16 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <queries><provider android:authorities="androidx.car.app.connection" /></queries>
+    <application android:usesCleartextTraffic="true">
+        <!-- Debug-only compatibility surface. An OBD dashboard is not a media app. -->
+        <meta-data android:name="com.google.android.gms.car.application" android:resource="@xml/media_automotive_app_desc" />
+        <service android:name="hu.elmdash.media.DashboardMediaService" android:exported="true"
+            android:label="ELM Dash • AA Média" android:foregroundServiceType="mediaPlayback" android:stopWithTask="false">
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>
