@@ -1,5 +1,9 @@
 # ELM Dash — Android Auto OBD dashboard MVP
 
+Az **ELM Dash** egy magyar nyelvű Android-alkalmazás, amely Bluetooth ELM327 OBD-II adapteren keresztül közvetlenül olvassa az autó motoradatait, és azokat a telefonon, illetve **Android Auto kijelzőn** jeleníti meg. Mutatja többek között a fordulatszámot, vízhőfokot, motorterhelést, valamint a 10 másodperces és napi átlagfogyasztást; útnaplót vezet, tankolás alapján üzemanyagszintet és útköltséget becsül, és internetes rádiókat is lejátszik.
+
+Az Android Auto-megjelenítés a rádió médiafelületét használó **kísérleti megoldás**. Az elérhető adatok az autótól és az adaptertől függenek; a számított fogyasztás és tankszint becslés.
+
 
 ## Képernyőképek
 
