@@ -3,6 +3,22 @@
 
 ## Képernyőképek
 
+### Android Auto · demóadatok
+
+Valódi Android Auto-felület, a Samsung telefonról a Google Desktop Head Unit szimulátorára vetítve, **800 × 480** felbontásban. A műszerek az alkalmazás beépített szimulátorát használják; a **DEMÓ** jelölés a képeken is látható. A rádió szünetel. A megjelenést és a borító méretét az Android Auto kezeli, ezért más fejegységen eltérhet. A médiafelületes dashboard továbbra is kísérleti integráció.
+
+<a href="docs/images/android-auto-demo-dashboard.png"><img src="docs/images/android-auto-demo-dashboard.png" width="800" alt="Android Auto demó: 10 másodperces és napi átlagfogyasztás, fordulatszám, vízhőfok és terhelés"></a>
+
+<table>
+  <tr><th width="50%">Váltakozó rádiósor</th><th width="50%">Rádióállomások</th></tr>
+  <tr>
+    <td><a href="docs/images/android-auto-demo-radio.png"><img src="docs/images/android-auto-demo-radio.png" width="400" alt="Android Auto demó: fogyasztás és Oxygen Music rádiósor"></a></td>
+    <td><a href="docs/images/android-auto-stations.png"><img src="docs/images/android-auto-stations.png" width="400" alt="Android Auto rádióválasztó: Oxygen Music, Retro Rádió és Rádió 1"></a></td>
+  </tr>
+</table>
+
+### Telefonos kísérőalkalmazás
+
 A **0.13-as telefonos kísérőalkalmazás** valódi képernyői. Az elsődleges célpont az Android Auto; az alábbi galéria a telefonos felületet mutatja. A fogyasztási és tankszintadatok becslések, a képeken látható értékek egy-egy mérés pillanatképei.
 
 <table>
