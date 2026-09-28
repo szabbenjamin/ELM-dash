@@ -7,6 +7,12 @@
 
 Valódi Android Auto-felület, a Samsung telefonról a Google Desktop Head Unit szimulátorára vetítve, **800 × 480** felbontásban. A műszerek az alkalmazás beépített szimulátorát használják; a **DEMÓ** jelölés a képeken is látható. A rádió szünetel. A megjelenést és a borító méretét az Android Auto kezeli, ezért más fejegységen eltérhet. A médiafelületes dashboard továbbra is kísérleti integráció.
 
+**Osztott nézet: térkép balra, ELM Dash médiakártya a jobb oldali egyharmadban.** Valódi DHU-képernyőkép, 1280 × 720 felbontás, szimulált motor- és fogyasztási adatok. A térkép országos léptékű; a kártya méretét és a borító sötétítését az Android Auto határozza meg.
+
+<a href="docs/images/android-auto-demo-split.png"><img src="docs/images/android-auto-demo-split.png" width="960" alt="Android Auto osztott nézet: Waze térkép mellett jobb oldalt egyharmados ELM Dash kártya demó fogyasztással, RPM-mel és vízhőfokkal"></a>
+
+**Teljes szélességű lejátszó:**
+
 <a href="docs/images/android-auto-demo-dashboard.png"><img src="docs/images/android-auto-demo-dashboard.png" width="800" alt="Android Auto demó: 10 másodperces és napi átlagfogyasztás, fordulatszám, vízhőfok és terhelés"></a>
 
 <table>
