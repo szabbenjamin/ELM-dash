@@ -1,5 +1,38 @@
 # ELM Dash — Android Auto OBD dashboard MVP
 
+
+## Képernyőképek
+
+A **0.13-as telefonos kísérőalkalmazás** valódi képernyői. Az elsődleges célpont az Android Auto; az alábbi galéria a telefonos felületet mutatja. A fogyasztási és tankszintadatok becslések, a képeken látható értékek egy-egy mérés pillanatképei.
+
+<table>
+  <tr>
+    <th width="33%">Fogyasztás és tankszint</th>
+    <th width="33%">Élő motoradatok</th>
+    <th width="33%">Internetes rádió</th>
+  </tr>
+  <tr>
+    <td align="center"><a href="docs/images/dashboard-live.jpg"><img src="docs/images/dashboard-live.jpg" width="260" alt="Élő műszerfal: becsült tankszint, 10 másodperces és napi átlagfogyasztás"></a></td>
+    <td align="center"><a href="docs/images/engine-data.jpg"><img src="docs/images/engine-data.jpg" width="260" alt="OBD motoradatok: sebesség, fordulatszám, terhelés, vízhőfok, MAP, TPS és feszültség"></a></td>
+    <td align="center"><a href="docs/images/radio.jpg"><img src="docs/images/radio.jpg" width="260" alt="Rádiólejátszó állomáskereséssel, kedvencekkel és automatikus indulással"></a></td>
+  </tr>
+</table>
+
+<details>
+<summary><strong>Útnapló és kapcsolat nélküli állapot</strong></summary>
+
+<table>
+  <tr><th width="50%">Részletes útnapló</th><th width="50%">Várakozás az autóra</th></tr>
+  <tr>
+    <td align="center"><a href="docs/images/trip-journal.jpg"><img src="docs/images/trip-journal.jpg" width="300" alt="Útnapló részletes fogyasztási, motor- és menetadatokkal, CSV-exporttal"></a></td>
+    <td align="center"><a href="docs/images/dashboard-offline.jpg"><img src="docs/images/dashboard-offline.jpg" width="300" alt="Kapcsolat nélküli műszerfal: csatlakozás gomb és adatra váró műszerek"></a></td>
+  </tr>
+</table>
+
+</details>
+
+*A képekre kattintva teljes méretben is megnyithatók.*
+
 **Fejlesztőként itt kezdd:** [AGENTS.md](AGENTS.md) → [részletes projektátadás](docs/PROJECT_HANDOFF.md). Autó, konfiguráció, felhasználói kérések, architektúra és még nem igazolt működés egy helyen. [GitHub feltöltési útmutató](docs/GITHUB.md).
 
 **Aktuális: 0.13.0.** Telefonos menü: Műszerfal · Napló · Rádió; kapcsolat a jobb felső fogaskeréken. Napi és útadatok a Naplóban. Út végén összesítő értesítés, OBD-kimaradásnál 3 perces türelem.
