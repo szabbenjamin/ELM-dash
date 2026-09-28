@@ -40,18 +40,18 @@ A **0.13-as telefonos kísérőalkalmazás** valódi képernyői. Az elsődleges
   </tr>
 </table>
 
-<details>
-<summary><strong>Útnapló és kapcsolat nélküli állapot</strong></summary>
+### Útnapló · anonimizált bemutató
+
+Az eredeti képernyőképen a dátumokat, indulási és befejezési időpontokat, valamint a telefon állapotsorát kitakartuk. Az út hossza, időtartama, fogyasztása és a motoradatok bemutatják a napló részletességét. A kitakarás a dokumentáció része, nem az alkalmazás felületi eleme.
 
 <table>
   <tr><th width="50%">Részletes útnapló</th><th width="50%">Várakozás az autóra</th></tr>
   <tr>
-    <td align="center"><a href="docs/images/trip-journal.jpg"><img src="docs/images/trip-journal.jpg" width="300" alt="Útnapló részletes fogyasztási, motor- és menetadatokkal, CSV-exporttal"></a></td>
+    <td align="center"><a href="docs/images/trip-journal.jpg"><img src="docs/images/trip-journal.jpg" width="300" alt="Anonimizált útnapló kitakart dátumokkal és időpontokkal, részletes fogyasztási és motoradatokkal"></a></td>
     <td align="center"><a href="docs/images/dashboard-offline.jpg"><img src="docs/images/dashboard-offline.jpg" width="300" alt="Kapcsolat nélküli műszerfal: csatlakozás gomb és adatra váró műszerek"></a></td>
   </tr>
 </table>
 
-</details>
 
 *A képekre kattintva teljes méretben is megnyithatók.*
 
