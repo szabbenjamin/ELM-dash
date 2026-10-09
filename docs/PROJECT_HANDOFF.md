@@ -1,6 +1,6 @@
 # ELM Dash — projektátadás és termékkövetelmények
 
-Állapot: **2026-09-18 · 0.13.0**. Ez a fájl a beszélgetés nélkül is használható fejlesztői összefoglaló. A régebbi tesztek bizonyítékai a [VALIDATION.md](../VALIDATION.md)-ben, a buildparancsok a [README.md](../README.md)-ben vannak.
+Állapot: **2026-10-09 · 0.15.0**. Ez a fájl a beszélgetés nélkül is használható fejlesztői összefoglaló. A régebbi tesztek bizonyítékai a [VALIDATION.md](../VALIDATION.md)-ben, a buildparancsok a [README.md](../README.md)-ben vannak.
 
 ## 1. Cél és használat
 
@@ -84,7 +84,7 @@ Részletes váltásjelzés: [DRIVING_GUIDANCE.md](../DRIVING_GUIDANCE.md). A for
 
 Az értesítéshez POST_NOTIFICATIONS engedély és engedélyezett „Út végi összesítés” csatorna kell. Telefonos értesítés, AA felugró megjelenítés nincs garantálva. Kényszerleállított/kikapcsolt telefon nem tud időben értesíteni. Demó nem küld valódi útösszesítést.
 
-Az útnaplóban: indulás/befejezés/lezárás oka, távolság, liter, átlag, időtartam, átlag/max sebesség, mozgás/alapjárat ideje, alapjárati üzemanyag, max RPM, min/max vízhőfok, átlagos terhelés, forrás és lefedettség. Nincs GPS, útvonal vagy cím. CSV: UTF-8 BOM, pontosvessző, idézett mezők, UTC időbélyeg; a telefon helyi időt mutat.
+Az útnaplóban: indulás/befejezés/lezárás oka, távolság, liter, átlag, időtartam, átlag/max sebesség, mozgás/alapjárat ideje, alapjárati üzemanyag, max RPM, min/max vízhőfok, átlagos terhelés, forrás és lefedettség. A 0.14 opcionálisan külön részletes GPS/OBD-fájlt is készít; az összesítő CSV továbbra sem tartalmaz helyadatot. CSV: UTF-8 BOM, pontosvessző, idézett mezők, UTC időbélyeg; a telefon helyi időt mutat.
 
 ### Telefonos navigáció (0.11)
 
@@ -120,7 +120,7 @@ Fő adatút: `ELM → parser → PID repository → DashboardController → nyer
 - `elm-journey-notifications`: már értesített útazonosítók. Régi történetet alkalmazásindításkor nem értesít újra.
 - Frissítés `adb install -r`; ne távolítsd el az appot adatmegőrzés helyett. A már telepített debug apphoz ugyanaz az aláírókulcs kell; új laptop vagy CI kulcsa eltérhet.
 - A demó ugyanazon parser/repository láncon fut, de külön napi adatokkal és valódi mentések nélkül.
-- Nincs backend, felhőszinkron vagy analitika. Rádió internetkapcsolata nem továbbít OBD-telemetriát az alkalmazásból.
+- Saját backend vagy analitika nincs; 0.14-től opcionális saját WebDAV-feltöltés van. Rádió internetkapcsolata nem továbbít OBD-telemetriát az alkalmazásból.
 
 ## 7. Build, CI, teszt és kiadás
 
@@ -150,7 +150,7 @@ A `.github/workflows` már tartalmaz buildet, tesztet, lintet, izolációellenő
 - Nyitott autós próba: új borító olvashatósága 1/3 és 2/3 nézetben, 8 s rádiósor-váltás, tankbecslés tényleges teletankolástól, új útnapló és út végi értesítés valódi motorleállítás/BT-kimaradás után.
 - Nyitott kalibráció: több valós tankolás és mért út alapján VE/korrekció pontossága. Ne tüntesd fel szenzorosan mért tankszintként.
 - Folyamatkilövés/újraindítás adathiányt okoz; a meglévő mentést helyreállítjuk, de háttérben garantált „mindig működik” ígéret nincs.
-- A felhasználó nem kért GPS-t, fizetős Play-regisztráció megvásárlását, felhőfiókot vagy automatikus adatfeltöltést. GitHubhoz most dokumentált, megosztható projektet szeretne.
+- A 2026-10-09-i kérés kifejezetten GPS-rögzítést és saját WebDAV-ra automatikus útvégi feltöltést kér. Fizetős Play-regisztráció vagy felhőfiók vásárlása továbbra sem kérés. GitHubhoz most dokumentált, megosztható projektet szeretne.
 
 ## 9. Fejlődési idővonal röviden
 
@@ -169,3 +169,11 @@ Induláskor töltsön le átlagos magyar benzinárat, és az út összesítőjé
 ## Legfrissebb döntés: saját tankolási ár (0.13)
 
 A felhasználó az internetes átlagár helyett a tankoláskor megadott összegből és literből akar számolni. Ez felülírja a 0.12-es automatikus árlekérést és kitöltést. Az új utak a legutóbbi áras saját tankolást használják; megadott ár nélkül ismeretlen a költség. A korábbi utak rögzített ára megmarad. Az aktuális részletek a [TRIP_COST.md](TRIP_COST.md) tetején vannak.
+
+## 0.14 – részletes menetnapló (2026-10-09)
+
+Percenkénti GNSS-kérés járó motornál, másodpercenkénti OBD-pillanatkép, lezárt JSONL-fájlok és WorkManager WebDAV-feltöltés. Beállítások/engedélyek/export: új Útvonal és WebDAV oldal. Alapból kikapcsolt; valódi útvonal vagy hitelesítő adat nem kerülhet a repóba. Teljes szervizdiagnosztikát nem állítunk: a jelenlegi 11 standard PID és számított fogyasztás a lefedettség. Részletek: [ROUTE_RECORDING.md](ROUTE_RECORDING.md).
+
+## 0.15 – úttérkép és HTML-export
+
+Felhasználói kérés: teljes képernyős útrészletek interaktív OSM-térképpel, perces sebesség/fogyasztáslista nélkül; a telefon HTML-térképet is gyártson és töltsön fel WebDAV-ra. Megvalósítás: RouteReport közös HTML-generátor, beágyazott Leaflet, külön OSM-csempebetöltés, szakaszolt GPS-vonal, JourneyDialog WebView. JSONL+HTML közös sikerjelölő; régi JSONL-feltöltések HTML-pótlása. Nincs visszamenőleges GPS és automatikus távoli fájlletöltés. Részletes működés/korlátok: ROUTE_RECORDING.md.
