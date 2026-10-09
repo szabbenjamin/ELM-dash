@@ -10,8 +10,8 @@ android {
         applicationId = "hu.elmdash.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 17
-        versionName = "0.15.0"
+        versionCode = 18
+        versionName = "0.15.1"
     }
     flavorDimensions += "surface"
     productFlavors {

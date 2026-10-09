@@ -72,7 +72,7 @@ fun ElmDashboard(controller: DashboardController, autoSurface: String, radioCont
                 Row(Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 18.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("ELM / DASH", fontWeight = FontWeight.Black, fontSize = 23.sp, letterSpacing = 2.sp)
-                        Text(when (autoSurface) { "media" -> "ANDROID AUTO MÉDIA  ·  0.15"; "unsupported" -> "ANDROID AUTO LAB  ·  0.15"; else -> "DIRECT BLUETOOTH OBD  ·  0.15" }, color = Muted, fontSize = 10.sp, letterSpacing = 1.5.sp)
+                        Text(when (autoSurface) { "media" -> "ANDROID AUTO MÉDIA  ·  0.15.1"; "unsupported" -> "ANDROID AUTO LAB  ·  0.15.1"; else -> "DIRECT BLUETOOTH OBD  ·  0.15.1" }, color = Muted, fontSize = 10.sp, letterSpacing = 1.5.sp)
                     }
                     if (settingsOpen) IconButton(onClick = { if (routeSettingsOpen) routeSettingsOpen = false else if (fuelSettingsOpen) fuelSettingsOpen = false else settingsOpen = false },
                         modifier = Modifier.semantics { contentDescription = "Vissza" }) { Text("←", fontSize = 26.sp) }
