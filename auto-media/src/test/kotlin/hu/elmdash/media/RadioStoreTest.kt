@@ -17,7 +17,7 @@ class RadioStoreTest {
     @Test fun `catalog includes requested exact Oxygen stream and popular Hungarian stations`() {
         val s = RadioStore(context).state.value
         assertEquals("https://oxygenmusic.hu:8443/oxygenmusic", s.selected.url)
-        assertEquals(14, s.stations.size)
+        assertEquals(20, s.stations.size)
         assertEquals(s.stations.size, s.stations.map { it.id }.distinct().size)
         assertTrue(s.stations.any { it.name == "Retro Rádió" })
         s.stations.forEach { assertEquals(it.url, RadioStore.validateUrl(it.url)) }
@@ -46,7 +46,7 @@ class RadioStoreTest {
         store.select(id); store.status(false, true)
         assertThrows(IllegalArgumentException::class.java) { store.remove(id) }
         store.status(false, false); store.remove(id); store.remove("oxygen")
-        assertEquals(14, store.state.value.stations.size)
+        assertEquals(20, store.state.value.stations.size)
     }
 
     @Test fun `reject malformed credentials local files duplicate streams and oversized custom list`() {
