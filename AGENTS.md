@@ -1,6 +1,6 @@
 # Fejlesztő agentek belépési pontja
 
-Ez az ELM Dash Android-projekt. A felhasználó elsődleges célpontja **Android Auto**, a telefon kísérőfelület. Az aktuális átadás dátuma 2026-09-18, appverzió 0.13.0.
+Ez az ELM Dash Android-projekt. A felhasználó elsődleges célpontja **Android Auto**, a telefon kísérőfelület. Az aktuális átadás dátuma 2026-10-09, appverzió 0.15.0.
 
 ## Kezdés
 
@@ -38,3 +38,11 @@ A felhasználó kérésére a „Demó indítása” gomb kikerült a telefonos 
 ## Útköltség (0.13, új felhasználói döntés)
 
 A saját tankolás összege / betöltött liter adja a következő utak árát. Webes árlekérés és automatikus visszamenőleges kitöltés nincs. A régi útárakat megőrizzük. [TRIP_COST.md](docs/TRIP_COST.md) tetején az aktuális szabály, alatta a történeti 0.12-es specifikáció található. Ne kösd vissza az internetes árletöltést új kérés nélkül.
+
+## GPS / WebDAV 0.14
+
+Lásd [ROUTE_RECORDING.md](docs/ROUTE_RECORDING.md). Csak opt-in valódi utak rögzíthetők; demó nem. Ne commitolj útvonal-JSONL-t, exportot, koordinátát vagy WebDAV-hitelesítő adatot. Új szerver beállítása ne továbbítsa oda a korábbi útvonalakat.
+
+## Úttérkép 0.15
+
+A Napló útrészletei teljes képernyős ablakban, helyben generált HTML/Leaflet nézetben nyílnak. A WebDAV sikerjelölő csak a JSONL és HTML együttes sikerénél írható. A térképcsempék opt-in hálózati megjelenítésűek; hiányzó útvonalat ne rekonstruálj. A fájlban ne legyen célhely/jelszó vagy nyers, HTML-be illesztett szöveg.

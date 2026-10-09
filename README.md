@@ -79,6 +79,10 @@ A Car App Library főképernyőjén **nagy, színes fordulatszám–vízhőfok g
 
 **Verzió:** 0.13.0 · **Minimum:** Android 8 / API 26 · **Target/compile:** Android 16 / API 36.
 
+**Új a 0.15-ben:** teljes képernyős, interaktív OSM/Leaflet útrészletek a Naplóban; útvégi HTML-térkép készítése és feltöltése a JSONL mellé. Az OSM alaptérkép külön gombbal, interneten tölthető be. [Térkép és HTML működése](docs/ROUTE_RECORDING.md).
+
+**Új a 0.14-ben:** választható percenkénti GPS és másodpercenkénti OBD-menetnapló, helyi ZIP-export és automatikus WebDAV-feltöltés út végén. Beállítás: fogaskerék → Útvonal és WebDAV. [Engedélyek, adatok és feltöltés](docs/ROUTE_RECORDING.md).
+
 **Új a 0.13-ban:** tankoláskor megadott literből és fizetett összegből számított saját literár; ebből útköltség a Naplóban, az értesítésben és CSV-ben. Az internetes árlekérés megszűnt. [Forrás, offline működés és részletek](docs/TRIP_COST.md).
 
 ## Gyors kipróbálás autó nélkül
@@ -158,7 +162,7 @@ Több eszköznél az `adb -s ESZKOZAZONOSITO …` formát használd. APK-fájlb�
 2. Samsung **Beállítások → Kapcsolatok → Bluetooth**: párosítsd az adaptert. A PIN az adapter dokumentációjában van; gyakori a `1234` vagy `0000`.
 3. Állítsd le a Torque és más OBD-appok kapcsolatát: egy SPP adapter jellemzően egy klienssel működik.
 4. ELM Dash → **Kapcsolat → Bluetooth-hozzáférés engedélyezése / Eszközlista frissítése**. Android 12+-on szükséges a **Közeli eszközök** engedély. Az értesítési engedély a leállítható állapotjelzőhöz ajánlott; elutasítása nem tiltja le a Bluetooth-hozzáférést.
-5. Válaszd ki az adaptert: azonnal mentődik. Az AA Média automatika a következő autós csatlakozáskor használja; kézi próbához **OBD-kapcsolat indítása**. Párosított eszközöket listázunk, helyadatot és Bluetooth-keresési engedélyt nem kérünk.
+5. Válaszd ki az adaptert: azonnal mentődik. Az AA Média automatika a következő autós csatlakozáskor használja; kézi próbához **OBD-kapcsolat indítása**. Párosított eszközöket listázunk, a párosított eszközök listázásához nem kell helyadat. Az opcionális GPS-napló külön helyengedélyt igényel.
 6. Ha normál SPP-vel nem csatlakozik, leállítás után próbáld a **Kompatibilis RFCOMM módot**. Ez a nyilvános insecure RFCOMM API-t használja; nincs rejtett csatorna-1 reflection.
 7. A tesztelt Kalos nem ad `015E` üzemanyagáramot vagy MAF-ot. Alapértelmezett profilja **Kalos 1.2** (MAP/RPM/IAT becslés); a már elmentett profil megmarad. Módosítás: mérés leállítása → **fogaskerék → Fogyasztás és autó beállításai**. Más autó üzemanyagát és profilját külön állítsd be; dízelhez a Kalos-modell nem használható.
 8. Indítsd újra a mérést, majd ellenőrizd az RPM, sebesség és hőmérséklet életszerűségét.
@@ -196,7 +200,7 @@ Az automatika és a hiányjelzés tesztelve szimulált AA-eseményekkel; a W113-
 - Kézi mérésnél az újracsatlakozás legfeljebb 5 próbát tesz növekvő várakozással. AA által indított automatikus mérésnél ezután 30 másodpercenként tovább próbálkozik, amíg a munkamenet aktív. 30 s stabil mérés után a próbálkozásszámláló újraindul. Folyamatos ECU-adathiány újracsatlakozást vált ki; az `ATRV` válasz önmagában nem számít ECU-válasznak.
 - A hiányzó adat nem nulla. Sikertelen olvasásnál vagy 5 másodperces elévülésnél az utolsó számérték szürkén, „Utolsó ismert adat” jelzéssel marad a helyén. A számítás csak friss adatot kap. A számjegyek tabuláris szélességűek; a minta és az időbélyeg együtt frissül, ezért az új minták nem villannak hiányzóra két frissítés között. Az Auto szürke színezésének végső megjelenítését a host kezeli.
 - Samsung akkukezelésnél szükség esetén: **Alkalmazások → ELM Dash → Akkumulátor → Korlátlan**. Ezt az alkalmazás nem módosítja automatikusan.
-- Beállítás és az utolsó valódi megfigyelés helyben mentődik 5 másodpercenként. Nincs felhő, analitika vagy helyadatgyűjtés. A 0.13-ban ismét csak a `mediaDebug` használ internetet a rádióhoz; árletöltés nincs. OBD-adatot nem küldünk ezeknek a szervereknek. Folyamatleállás után az előző mérés külön jelenik meg; az új kapcsolat új utat kezd.
+- Beállítás és az utolsó valódi megfigyelés helyben mentődik 5 másodpercenként. Analitika és árletöltés nincs. A 0.14-ben minden változat támogatja a külön engedélyezhető GPS/OBD-naplót és saját WebDAV-célhelyet; alapból kikapcsolva. A rádiószervereknek továbbra sem küldünk OBD-adatot. Folyamatleállás után az előző mérés külön jelenik meg; az új kapcsolat új utat kezd.
 
 ## PID-ek és mértékegységek
 
