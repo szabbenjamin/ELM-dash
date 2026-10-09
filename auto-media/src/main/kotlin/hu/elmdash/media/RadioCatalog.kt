@@ -16,6 +16,12 @@ internal object RadioCatalog {
         RadioStation("hir", "Hír FM", "https://stream.rcs.revma.com/wevb267khf9uv", true),
         RadioStation("rock", "103.9 a ROCK", "https://stream.rockradio.hu", true),
         RadioStation("info", "InfoRádió", "https://stream.infostart.hu/stream", true),
-        RadioStation("oxygen-rock", "Oxygen Classic Rock", "https://oxygenmusic.hu:8443/oxygenclassicrock_128", true)
+        RadioStation("oxygen-rock", "Oxygen Classic Rock", "https://oxygenmusic.hu:8443/oxygenclassicrock_128", true),
+        RadioStation("maria-hu", "Mária Rádió", "https://stream.mariaradio.hu:8000/mr", true),
+        RadioStation("katolikus-hu", "Magyar Katolikus Rádió", "https://katolikusradio.hu:8001/live_hi.mp3", true),
+        RadioStation("ucb1", "UCB 1 (angol)", "https://listen-ucb.sharp-stream.com/55_ucb_1_128_mp3", true),
+        RadioStation("ucb2", "UCB 2 (angol)", "https://listen-ucb.sharp-stream.com/55_ucb_2_128_mp3", true),
+        RadioStation("erf-plus", "ERF Plus (német)", "https://stream.erfplus.de/erf-1a64/mp3-128?ar-distributor=ffa5", true),
+        RadioStation("erf-jess", "ERF Jess (német)", "https://stream.erfjess.de/erf-1068/mp3-128?ar-distributor=ffa5", true)
     )
 }
