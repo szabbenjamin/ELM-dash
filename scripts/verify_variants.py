@@ -11,8 +11,8 @@ for variant in ("phoneDebug", "phoneRelease", "unsupportedDebug", "mediaDebug"):
     media = [s for s in tree.findall(".//service") if s.get(android + "name") == "hu.elmdash.media.DashboardMediaService"]
     metadata = [m for m in tree.findall(".//meta-data") if m.get(android + "name") == "com.google.android.gms.car.application"]
     assert bool(auto) == variant.startswith("unsupported"), variant
-    assert bool(media) == variant.startswith("media"), variant
+    assert bool(media) == (variant == "mediaDebug"), variant
     assert bool(metadata) == (variant in ("unsupportedDebug", "mediaDebug")), variant
-    assert any(p.get(android + "name") == "android.permission.INTERNET" for p in tree.findall("uses-permission")) == variant.startswith("media")
-    assert any(p.get(android + "name") == "android.permission.ACCESS_NETWORK_STATE" for p in tree.findall("uses-permission")) == variant.startswith("media")
+    assert any(p.get(android + "name") == "android.permission.INTERNET" for p in tree.findall("uses-permission"))
+    assert any(p.get(android + "name") == "android.permission.ACCESS_NETWORK_STATE" for p in tree.findall("uses-permission"))
     print(f"{variant}: isolation OK")

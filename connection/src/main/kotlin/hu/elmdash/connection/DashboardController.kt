@@ -43,6 +43,20 @@ class DashboardController(
     private val transportFactory: ((Boolean, String, Boolean) -> ElmTransport)? = null
 ) {
     val store = SessionStore(context)
+    val routeSettings = RouteSettings(context)
+    private var cachedRouteConfig = runCatching { routeSettings.load() }.getOrDefault(RouteConfig())
+    private val routeRecorder by lazy { RouteRecorder(context) }
+    var routeLocation: android.location.Location? = null
+    var routeGpsStatus: String = "GPS nincs elindítva"
+    private val routeStatusState = MutableStateFlow("Útvonalrögzítés kikapcsolva")
+    val routeStatus: StateFlow<String> = routeStatusState.asStateFlow()
+    fun routeConfig() = cachedRouteConfig
+    fun saveRouteConfig(config: RouteConfig) {
+        routeSettings.save(config)
+        cachedRouteConfig = config
+        if (!config.upload) RouteUploads.cancel(context) else RouteUploads.enqueuePending(context, true)
+    }
+    fun retryRouteUploads() = RouteUploads.enqueuePending(context, true)
     private val journeyStore = JourneyStore(context)
     private val journeyLog = JourneyLog(journeyStore.load())
     private val journeyNotifications = JourneyNotifications(context)
@@ -69,6 +83,10 @@ class DashboardController(
                     saveJournal()
                     mutableState.update { it.copy(journal = journeyLog.state) }
                 }
+                val routeConfig = routeConfig()
+                val routeState = mutableState.value.copy(nowMs = clock())
+                routeRecorder.tick(routeState, wallClock(), routeLocation, routeGpsStatus, routeConfig)
+                routeStatusState.value = (if (routeConfig.record) routeGpsStatus else "Útvonalrögzítés kikapcsolva") + " • " + routeSettings.status
                 val today = calendarDate()
                 if (mutableState.value.today != today) mutableState.update {
                     it.copy(today = today, daily = dailyComputer().summary(today))

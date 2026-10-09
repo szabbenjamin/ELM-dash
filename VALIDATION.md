@@ -220,3 +220,36 @@ A fizikai Carpuride-on a médiaút és a változó demóadatok megjelenése már
 - Színes műszerkép olvashatósága, tartós frissítési viselkedés és együttműködés zenével / navigációval a médiafelületen; más telefonok / fejegységek elfogadása.
 
 Az `unsupportedDebug` IOT kategóriát használó fejlesztői kísérlet. A sikeres DHU-próba nem jelent Play-jóváhagyást vagy minden fejegységre érvényes kompatibilitást. A pontos párosítási, számítási és Android Auto korlátok a [README-ben](README.md) szerepelnek.
+
+## 2026-10-09 – 0.14 GPS / részletes menetnapló / WebDAV
+
+- Teljes CI-parancs helyben sikeres: elm/obd/trip/connection/auto/auto-media tesztek, három debug lint, phone/unsupported/media debug build és phone release build. **143 teszt, 0 hiba**; `BUILD SUCCESSFUL`.
+- `python3 scripts/verify_variants.py`: mind a négy változat elkülönítése rendben. A hálózati engedély immár minden változatban szükséges a WebDAV-hoz; média- és Car App szolgáltatás csak a megfelelő változatban van.
+- Új automatizált esetek: HTTPS/célútvonal-validáció; célhoz kötés és jelszócsere; MKCOL/PUT, hitelesítés, átirányítás tiltása és HTTP hibabesorolás; GPS elévülése és hiányzó PID null; demó kizárása; valódi út fejléc/minta/lezárás sorrendje; félbehagyott JSONL-sor helyreállítása.
+- A csatlakoztatott telefon meglévő `hu.elmdash.app.media` csomagja sikeresen frissült `adb install -r` útján. Megnyitás után az UI-hierarchia a **0.14** verziót mutatta. Appadatot nem töröltünk, demóutat/tankolást nem rögzítettünk.
+- Az új beállítási oldal teljes telefonos vizuális ellenőrzése **függőben**: a felhasználó használja a telefont, és kérésére a próbát későbbre hagytuk. GPS-engedélyt nem állítottunk át és valós helyadatot nem gyűjtöttünk.
+- Saját WebDAV-fiók nincs konfigurálva; a szerverrel, tényleges GPS-mozgással és Android Auto háttérindítással végzett végpontok közötti teszt **nem történt meg**. A helyettesített szerverteszt nem bizonyítja a felhasználó szerverének kompatibilitását.
+- Részletek és bekapcsolás: [docs/ROUTE_RECORDING.md](docs/ROUTE_RECORDING.md).
+
+## 2026-10-09 – 0.15 útrészletek / OSM / HTML
+
+- Új RouteReport-tesztek: ismételt GPS-fixek kiszűrése, hosszú kimaradás szakaszolása, érvénytelen koordináta eldobása, GPS nélküli út, célazonosító kihagyása a HTML-adatokból, HTML/script törőszöveg biztonságos beágyazása. 145 teszt, 0 hiba a teljes modulteszt-készletben.
+- Böngészős próba kizárólag szintetikus GPS-pontokkal: Leaflet útvonal és kezdő/végpont; zoom és teljesút-gomb; OSM betöltés után 6/6 látható csempe betöltött; attribution jelen van. 420 px-es nézetben document.scrollWidth = innerWidth = 420, nincs vízszintes kilógás. A HTML kártyái és térképe vizuálisan ellenőrizve.
+- A telefonhoz nem nyúltunk: a felhasználó korábban jelezte, hogy használja. A Compose teljes képernyős ablak és az Android WebView tényleges telefonos próbája, illetve a 0.15 telepítése még hátravan. A telefonon utoljára igazolt telepítés 0.14.
+- A JSONL és HTML éles WebDAV-feltöltése nincs felhasználói szerveren igazolva. Az OSM interaktív nézet hálózati tesztje nem WebDAV-teszt.
+- Végső ellenőrzés: minden modulteszt, `lintMediaDebug`, mindhárom debug APK és `phoneRelease` build sikeres (`BUILD SUCCESSFUL`, 2m 13s). `verify_variants.py`: mind a négy változat elkülönítése rendben. `git diff --check`: rendben.
+
+### 0.15 telepítés és éles WebDAV-próba előkészítése
+
+- A felhasználó későbbi engedélyével a meglévő `media` csomag ADB-frissítése sikeres; az UI-hierarchia 0.15 verziót igazolt. Meglévő adat nem törlődött.
+- A telefon ismét használatban volt; a felhasználó visszajelzése után a vezérlést leállítottuk. A WebDAV-hitelesítést az appba még nem mentettük, mobilos feltöltés nem indult.
+- A laptopról indított HTTPS-elérési próba TCP-kapcsolat-elutasítás miatt meghiúsult, még HTTP-hitelesítés előtt. Ez nem bizonyít hibás jelszót vagy a mobilról való elérhetetlenséget. Éles feltöltési siker továbbra sincs igazolva. Szervercímet és hitelesítő adatot nem rögzítünk a projektben.
+
+### Éles telefonos WebDAV-próba és GPS-beállítás – sikeres (2026-10-09)
+
+- A felhasználó új engedélyével a 0.15 telefonos beállítási oldalán saját WebDAV-célhelyét és alkalmazásjelszavát mentettük. A hitelesítés titkosított `secret` mezőben tárolódik; a repó nem tartalmaz címet vagy jelszót.
+- Elkülönített, egyértelműen tesztnek jelölt, szintetikus GPS-adatokból álló JSONL-t helyeztünk a részletesnapló-tárolóba. A valódi összesítő útnapló/tank/nap nem módosult. A Feltöltés újrapróbálása a tényleges WorkManager-folyamatot indította; a telefon legenerálta a HTML-t és feltöltötte mindkét fájlt. `jsonl+html-v1` sikerjelölő és sikeres UI-státusz igazolva.
+- A telefonról külön HTTPS GET-tel visszaolvastuk a távoli fájlokat. JSONL pontos tartalmi egyezés; HTML CRLF/LF normalizálás után azonos. A HTML letöltött példánya 169403 byte, az eredeti 170090 byte; a különbség kizárólag sortörés.
+- A konkrét szerver HTML-válasza `Content-Type: text/plain`, `Content-Disposition: attachment`, `Content-Security-Policy: default-src 'none'`. A WebDAV-link emiatt nem interaktív HTML-hosting. Feltöltés rendben; közvetlen webes térképmegjelenítés ezen a végponton korlátozott. Szerverkonfigurációt nem változtattunk.
+- Pontos és háttérbeli helyengedély a rendszer felületén engedélyezve; `ACCESS_FINE_LOCATION` és `ACCESS_BACKGROUND_LOCATION` granted=true. Rögzítés és automatikus feltöltés bekapcsolva. Valós autós/GPS-útpróba továbbra sem történt.
+- Régi, GPS nélküli út teljes képernyős Compose/WebView-részletezője telefonon megnyitva és képernyőképpel vizuálisan ellenőrizve: összesítő kártyák, hiányzó GPS magyarázata, bezárás működik. A felhasználói képernyőkép nem került a repóba.

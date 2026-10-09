@@ -171,7 +171,7 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
 
 @Composable
 private fun JourneyCard(record: JourneyRecord, active: Boolean = false) {
-    var expanded by rememberSaveable(record.id) { mutableStateOf(active) }
+    var expanded by rememberSaveable(record.id) { mutableStateOf(false) }
     val t = record.summary; val s = record.stats
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -186,27 +186,8 @@ private fun JourneyCard(record: JourneyRecord, active: Boolean = false) {
                     (if (price.sourceUrl == PetrolPrice.MANUAL_SOURCE) "\nTankolás: " else "\nÁr lekérve: ") + date(price.fetchedAtMs) + (if (price.cached) " • korábbi mentett ár" else "") +
                     (if (price.appliedAfterStart) "\nUtólag rögzített ár" else ""), fontSize = 12.sp)
             }
-            TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "Részletek bezárása" else "Út részletei") }
-            if (expanded) {
-                fun line(label: String, v: String) = "$label: $v"
-                Text(listOf(
-                    line("Indulás", date(record.startedAtMs)),
-                    line("Befejezés", record.endedAtMs?.let { date(it) } ?: "folyamatban"),
-                    line("Lezárás", record.end?.label ?: "—"),
-                    line("Átlag / legnagyobb sebesség", "${value(record.averageSpeed)} / ${value(s.maxSpeed, 0)} km/h"),
-                    line("Mozgás / alapjárat megfigyelve", "${duration(s.movingSeconds)} / ${duration(s.idleSeconds)}"),
-                    line("Alapjárati fogyasztás", "${value(s.idleFuelLiters, 3)} l"),
-                    line("Legnagyobb fordulatszám", "${value(s.maxRpm, 0)} rpm"),
-                    line("Vízhőfok min–max", "${value(s.minCoolant, 0)}–${value(s.maxCoolant, 0)} °C"),
-                    line("Átlagos motorterhelés", "${value(s.averageLoad, 0)} %"),
-                    line("Fogyasztásadat lefedettsége", "${value(t.coveragePercent, 0)} %"),
-                    line("Átlaghoz használt szakasz", "${value(t.pairedFuelLiters, 3)} l / ${value(t.pairedDistanceKm, 2)} km"),
-                    line("Forrás", record.sources.joinToString { it.label }.ifEmpty { "Nincs fogyasztásadat" }),
-                    line("Profil", record.profile)
-                ).joinToString("\n"), fontSize = 13.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (!t.fromEngineStart) Text("Mérés a csatlakozástól; az indulás előtti rész nem ismert.", fontSize = 12.sp)
-                if (t.hasGaps) Text("A hiányzó szakaszokat nem töltjük ki kitalált adatokkal.", fontSize = 12.sp)
-            }
+            TextButton(onClick = { expanded = true }) { Text("Út részletei és térkép") }
         }
     }
+    if (expanded) JourneyDialog(record) { expanded = false }
 }
