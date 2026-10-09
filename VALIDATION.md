@@ -253,3 +253,10 @@ Az `unsupportedDebug` IOT kategóriát használó fejlesztői kísérlet. A sike
 - A konkrét szerver HTML-válasza `Content-Type: text/plain`, `Content-Disposition: attachment`, `Content-Security-Policy: default-src 'none'`. A WebDAV-link emiatt nem interaktív HTML-hosting. Feltöltés rendben; közvetlen webes térképmegjelenítés ezen a végponton korlátozott. Szerverkonfigurációt nem változtattunk.
 - Pontos és háttérbeli helyengedély a rendszer felületén engedélyezve; `ACCESS_FINE_LOCATION` és `ACCESS_BACKGROUND_LOCATION` granted=true. Rögzítés és automatikus feltöltés bekapcsolva. Valós autós/GPS-útpróba továbbra sem történt.
 - Régi, GPS nélküli út teljes képernyős Compose/WebView-részletezője telefonon megnyitva és képernyőképpel vizuálisan ellenőrizve: összesítő kártyák, hiányzó GPS magyarázata, bezárás működik. A felhasználói képernyőkép nem került a repóba.
+
+## 2026-10-09 – 0.15.1 keresztény rádiók
+
+- Hat új, hivatalos oldalról származó HTTPS MP3 stream; mindegyik HTTP 200 + audio/mpeg + 4096 bájt GET-próba és ffprobe MP3/44,1 kHz azonosítás sikeres. Részletek: RADIO_STATIONS.md.
+- `:auto-media:testDebugUnitTest`, `:app:lintMediaDebug`, `:app:assembleMediaDebug`: BUILD SUCCESSFUL. A meglévő katalógusteszt állomásszáma 20-ra frissült.
+- `verify_variants.py`: izoláció rendben; ebben a módosításban csak a mediaDebug APK épült újra, a többi változat korábbi buildjének manifestjét ellenőrizte.
+- Telefonos telepítés és új állomások tényleges Android/AA-lejátszási próbája még függőben: az ADB jelenleg nem lát csatlakoztatott készüléket.

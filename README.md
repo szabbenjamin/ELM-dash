@@ -266,7 +266,7 @@ A **mai átlag a telefon helyi dátuma szerint éjfélkor vált napot**. Motorle
 
 A `mediaDebug` változat **Rádió** lapján és az AA **Rádióállomások / Kedvenc rádiók** listájában használható.
 
-- **14 beépített állomás:** Oxygen Music, Retro Rádió, Rádió 1, Best FM, Sláger FM, Jazzy, Kossuth, Petőfi, Bartók, Dankó, Hír FM, 103.9 a ROCK, InfoRádió, Oxygen Classic Rock. Ellenőrzött streamcímek és források: [RADIO_STATIONS.md](RADIO_STATIONS.md).
+- **20 beépített állomás:** Oxygen Music, Retro Rádió, Rádió 1, Best FM, Sláger FM, Jazzy, Kossuth, Petőfi, Bartók, Dankó, Hír FM, 103.9 a ROCK, InfoRádió, Oxygen Classic Rock, Mária Rádió, Magyar Katolikus Rádió, UCB 1/2 (angol), ERF Plus/Jess (német). Ellenőrzött streamcímek és források: [RADIO_STATIONS.md](RADIO_STATIONS.md).
 - **Lejátszás, szünet, leállítás, előző/következő állomás**, telefonos ékezetfüggetlen keresés, mentett kedvencek. Az AA médiavezérlő ugyanazt a lejátszót vezérli; a hangalapú keresési callback állomásnévre keres, a hangfelismerés a host feladata.
 - Legfeljebb **20 saját HTTP/HTTPS stream** menthető névvel, törölhető és kedvencnek jelölhető. Közvetlen MP3/AAC/Ogg vagy HLS cím szükséges, nem egy lejátszós weboldal. DRM és bejelentkezés nem támogatott. A Roxy pontos, felhasználó által ígért linkje még nincs megadva; saját állomásként azonnal felvehető.
 - A megadott Oxygen-cím pontosan `https://oxygenmusic.hu:8443/oxygenmusic` (AAC).

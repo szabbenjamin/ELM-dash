@@ -24,3 +24,22 @@ A válogatás alapja az [NMHH 2026. március–május országos és budapesti na
 Az Oxygen Music címe a felhasználó által megadott pontos URL. A többi állomás streamje a rádió saját oldalának lejátszójából/nyilvános streamkiszolgálójából származik. A címek a `RadioCatalog.kt` fájlban módosíthatók. A saját állomásokat és kedvenceket a telefon helyben menti; az állomások adatfolyamai közvetlenül a szolgáltatókhoz kapcsolódnak.
 
 A **Roxy** pontos linkje még hiányzik, ezért nincs találomra felvett Roxy állomás. Megadható a telefon Rádió lapján saját állomásként, vagy beépíthető a katalógusba, amint a felhasználó elküldi.
+
+## Keresztény rádiók – 0.15.1 (2026-10-09)
+
+Hat új alapállomás, összesen 20 beépített rádió. Mindegyik a telefonos és az Android Auto állomáslistában is elérhető, kereshető és kedvencnek jelölhető. A meglévő kiválasztás és kedvencek frissítéskor megmaradnak.
+
+| Állomás | Nyelv / jelleg | Közvetlen stream | Hivatalos forrás |
+|---|---|---|---|
+| Mária Rádió | magyar, katolikus | `https://stream.mariaradio.hu:8000/mr` | [Hivatalos lejátszó](https://www.mariaradio.hu/MRPlayer.html?r=mor) |
+| Magyar Katolikus Rádió | magyar, katolikus | `https://katolikusradio.hu:8001/live_hi.mp3` | [Hivatalos oldal és lejátszó](https://www.katolikusradio.hu/) |
+| UCB 1 | angol, keresztény | `https://listen-ucb.sharp-stream.com/55_ucb_1_128_mp3` | [Hivatalos lejátszó](https://www.ucb.co.uk/radioplayer/uk) |
+| UCB 2 | angol, keresztény | `https://listen-ucb.sharp-stream.com/55_ucb_2_128_mp3` | [Hivatalos lejátszó](https://www.ucb.co.uk/radioplayer/inspirational) |
+| ERF Plus | német, keresztény | `https://stream.erfplus.de/erf-1a64/mp3-128?ar-distributor=ffa5` | [Hivatalos vételi útmutató](https://www.erf.de/apps), [M3U](https://stream.erf.de/erfplus.m3u) |
+| ERF Jess | német, keresztény | `https://stream.erfjess.de/erf-1068/mp3-128?ar-distributor=ffa5` | [Hivatalos vételi útmutató](https://www.erf.de/apps), [M3U](https://stream.erf.de/erfjess.m3u) |
+
+A címek a hivatalos lejátszók konfigurációjából, illetve az ERF hivatalos M3U listájából származnak. A katalógus a közvetlen hangfolyamot tartalmazza, nem az M3U lejátszólistát. Az ERF a linkeket magáncélú hallgatásra adja meg. Az alkalmazás közvetlenül a rádióhoz csatlakozik; nem közvetíti tovább és nem archiválja a műsort.
+
+2026-10-09-i laptopos próba: mind a hat URL HTTP 200, `audio/mpeg`, legalább 4096 bájt hangadat; ffprobe mindegyiken MP3/44,1 kHz hangfolyamot azonosított. A Mária Rádió mono, a többi sztereó. Ez pillanatnyi elérhetőségi/dekódolhatósági próba, nem rendelkezésre állási garancia vagy autós hallgatási teszt.
+
+A Szent István Rádió megvizsgált HTTPS-lejátszólistájának tanúsítványa a próba idején lejárt volt, ezért nem került a beépített válogatásba. TLS-ellenőrzést nem kapcsolunk ki rádióhallgatás miatt.
