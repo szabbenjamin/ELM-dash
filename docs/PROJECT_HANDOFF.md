@@ -1,6 +1,6 @@
 # ELM Dash — projektátadás és termékkövetelmények
 
-Állapot: **2026-10-09 · 0.15.0**. Ez a fájl a beszélgetés nélkül is használható fejlesztői összefoglaló. A régebbi tesztek bizonyítékai a [VALIDATION.md](../VALIDATION.md)-ben, a buildparancsok a [README.md](../README.md)-ben vannak.
+Állapot: **2026-10-09 · 0.15.1**. Ez a fájl a beszélgetés nélkül is használható fejlesztői összefoglaló. A régebbi tesztek bizonyítékai a [VALIDATION.md](../VALIDATION.md)-ben, a buildparancsok a [README.md](../README.md)-ben vannak.
 
 ## 1. Cél és használat
 
@@ -58,7 +58,7 @@ Részletes váltásjelzés: [DRIVING_GUIDANCE.md](../DRIVING_GUIDANCE.md). A for
 ### Rádió és automatika
 
 - Tényleges rádiólejátszó kell: állomáslista, következő/előző, keresés, kedvencek, saját URL, hangfókusz és megszakadáskezelés.
-- 14 beépített állomás, többek között Retro; a katalógus és forrásai: [RADIO_STATIONS.md](../RADIO_STATIONS.md). A Roxy külön felmerült igényként; a tényleges elérhetőséget a katalógusból ellenőrizd, ne feltételezz működő streamet pusztán a beszélgetés alapján.
+- 20 beépített állomás, többek között Retro; a katalógus és forrásai: [RADIO_STATIONS.md](../RADIO_STATIONS.md). A Roxy külön felmerült igényként; a tényleges elérhetőséget a katalógusból ellenőrizd, ne feltételezz működő streamet pusztán a beszélgetés alapján.
 - A felhasználó pontos Oxygen URL-je: `https://oxygenmusic.hu:8443/oxygenmusic`.
 - Hálózatvesztéskor 2/5/10/20/30 s újrapróbálkozás; hálózat-visszatérés figyelése, 30 s pufferelési watchdog. Kézi szünet ne indítsa újra magát.
 - AA-csatlakozásra az utolsó állomás automatikusan indulhat (alapból engedélyezett); a kézi vezérlés elsőbbsége megmarad. A rádió és az OBD külön életciklus.
@@ -177,3 +177,7 @@ Percenkénti GNSS-kérés járó motornál, másodpercenkénti OBD-pillanatkép,
 ## 0.15 – úttérkép és HTML-export
 
 Felhasználói kérés: teljes képernyős útrészletek interaktív OSM-térképpel, perces sebesség/fogyasztáslista nélkül; a telefon HTML-térképet is gyártson és töltsön fel WebDAV-ra. Megvalósítás: RouteReport közös HTML-generátor, beágyazott Leaflet, külön OSM-csempebetöltés, szakaszolt GPS-vonal, JourneyDialog WebView. JSONL+HTML közös sikerjelölő; régi JSONL-feltöltések HTML-pótlása. Nincs visszamenőleges GPS és automatikus távoli fájlletöltés. Részletes működés/korlátok: ROUTE_RECORDING.md.
+
+## 0.15.1 – keresztény rádiók
+
+Hat új alapállomás: Mária Rádió, Magyar Katolikus Rádió, UCB 1/2 (angol), ERF Plus/Jess (német). A telefon és az Android Auto közös katalógusát bővítik; a mentett kiválasztás, kedvencek és saját állomások megmaradnak. Hivatalos források és streampróba: [RADIO_STATIONS.md](../RADIO_STATIONS.md).
