@@ -16,6 +16,7 @@ class ObdService : Service() {
     private var observer: Job? = null
     private var initialWindow: Job? = null
     private var disconnectAlerted = false
+    private val parking by lazy { ParkingTracker(this) }
     private val routeGps by lazy { RouteGps(this) }
     private var gpsJob: Job? = null
 
@@ -35,12 +36,18 @@ class ObdService : Service() {
             manager.createNotificationChannel(NotificationChannel("obd", "OBD-kapcsolat", NotificationManager.IMPORTANCE_LOW))
             ServiceCompat.startForeground(this, 327, notification("Kapcsolódás a mentett OBD-adapterhez…"),
                 if (Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE or
-                    (if (controller.routeConfig().record && RouteGps.allowed(this)) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0) else 0)
-            val locationStarted = controller.routeConfig().record && RouteGps.allowed(this)
+                    (if (RouteGps.allowed(this)) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0) else 0)
+            var locationStarted = RouteGps.allowed(this)
             gpsJob?.cancel()
             gpsJob = scope.launch {
                 while (isActive) {
                     val state = controller.state.value.copy(nowMs = SystemClock.elapsedRealtime())
+                    if (!locationStarted && RouteGps.allowed(this@ObdService)) {
+                        ServiceCompat.startForeground(this@ObdService, 327, notification("OBD-mérés…"),
+                            if (Build.VERSION.SDK_INT >= 29) ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0)
+                        locationStarted = true
+                    }
+                    parking.tick(state, locationStarted && RouteGps.allowed(this@ObdService))
                     routeGps.tick(locationStarted && controller.routeConfig().record && RouteJson.running(state), state.nowMs)
                     controller.routeLocation = routeGps.location
                     controller.routeGpsStatus = if (!locationStarted && controller.routeConfig().record) "GPS-engedélyezés után indítsd újra az OBD-kapcsolatot" else routeGps.status
@@ -119,6 +126,7 @@ class ObdService : Service() {
 
     override fun onDestroy() {
         scope.cancel()
+        parking.stop()
         routeGps.stop(); controller.routeLocation = null
         controller.routeGpsStatus = "GPS nincs elindítva"
         if (controller.state.value.phase != Phase.ERROR) controller.stopLiveOnly()

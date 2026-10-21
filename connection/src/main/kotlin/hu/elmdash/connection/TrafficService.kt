@@ -111,24 +111,34 @@ class TrafficService : Service() {
         }
         return START_NOT_STICKY
     }
+    private class FeedSizeException : Exception()
     private suspend fun fetch(url: String) {
         try {
             val parsed = withContext(Dispatchers.IO) {
                 val request = Request.Builder().url(url).header("Accept", "application/xml, text/xml").build()
                 val active = client.newCall(request); call = active
                 active.execute().use { response ->
-                    require(response.isSuccessful)
+                    if (!response.isSuccessful) throw java.io.IOException("HTTP ${response.code}")
                     val body = checkNotNull(response.body)
-                    require(body.contentLength() <= DatexParser.MAX_BYTES)
+                    if (body.contentLength() > DatexParser.MAX_BYTES) throw FeedSizeException()
                     val source = body.source()
-                    require(!source.request(DatexParser.MAX_BYTES.toLong() + 1))
+                    if (source.request(DatexParser.MAX_BYTES.toLong() + 1)) throw FeedSizeException()
                     DatexParser.parse(source.readByteArray())
                 }
             }
             feed = parsed; receivedAt = SystemClock.elapsedRealtime()
             sourceStatus = "${parsed.events.size} esemény; ${parsed.skipped} kihagyva (nem támogatott/hely nélküli/inaktív)"
         } catch (e: CancellationException) { throw e }
-        catch (_: Exception) { sourceStatus = "A NAP-lekérés sikertelen. Link/jogosultság/formátum/hálózat ellenőrzendő." }
+        catch (_: FeedSizeException) { sourceStatus = "A NAP-adat meghaladja a 24 MiB méretkorlátot." }
+        catch (_: java.net.SocketTimeoutException) { sourceStatus = "A NAP-lekérés időtúllépés miatt megszakadt." }
+        catch (_: javax.net.ssl.SSLException) { sourceStatus = "A NAP biztonságos kapcsolata nem hozható létre." }
+        catch (e: java.io.IOException) {
+            // Only our numeric HTTP status is safe to expose; network messages may contain the secret URL.
+            sourceStatus = if (e.message?.matches(Regex("HTTP [0-9]{3}")) == true)
+                "NAP: ${e.message}. Ellenőrizd a hozzáférést és a szolgáltatás állapotát."
+            else "A NAP nem érhető el. Ellenőrizd az internetkapcsolatot."
+        }
+        catch (_: Exception) { sourceStatus = "A NAP válasza nem támogatott vagy hibás DATEX II XML." }
     }
     private fun evaluate() {
         val elapsed = SystemClock.elapsedRealtime()

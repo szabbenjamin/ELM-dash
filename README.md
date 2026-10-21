@@ -5,13 +5,22 @@ Az **ELM Dash** egy magyar nyelvű Android-alkalmazás, amely Bluetooth ELM327 O
 Az Android Auto-megjelenítés a rádió médiafelületét használó **kísérleti megoldás**. Az elérhető adatok az autótól és az adaptertől függenek; a számított fogyasztás és tankszint becslés.
 
 
+## Tankolás, parkolóhely és szerviz (0.17.4)
+
+- **Tankolás:** helyi blokkfelismerés (ML Kit), szerkeszthető benzintípus, liter és kedvezmény utáni üzemanyagár. Mentés előtt összesítő és tele-megerősítés; a fotó nem kerül felhőbe. Bizonytalan vagy vegyes kedvezményt kézzel kell ellenőrizni. Két teletankolás összevethető a becsült fogyasztással.
+- **Hol hagytam az autót?** Pontos és háttérbeli helyengedéllyel az OBD-kapcsolat alatt automatikusan rögzíti a friss helyet motorleálláskor. Két perc után parkolásnak tekinti; 50 méternél távolabbról OSM-kártyát mutat, a gomb Google Maps gyalogos navigációt indít. Friss GPS nélkül nem talál ki helyet.
+- **Szerviz:** önálló alsó menüpont; kézzel rögzíthető szervizek, kilométeróra és dátum/km intervallumok, értesítések. Külön engedélyezhető időjárásos guminyomás-emlékeztető.
+- **Rádió:** Ez az a nap! Rádió is elérhető.
+
+A parkolás valódi motorleállási és háttér-GPS próbája, valamint a szervizértesítések autós ellenőrzése még hátravan. Részletek: [ellenőrzések](VALIDATION.md), [fejlesztői átadás](docs/PROJECT_HANDOFF.md).
+
 ## Becsült hatótáv (0.16.1)
 
-A tankban becsült benzin és a mai átlagfogyasztás alapján hátralévő kilométer. Legalább 1 km mérésig a mentett utak súlyozott átlaga az alap. Telefonon a tankkártyán, AA-n a Tank adatlapon és a váltakozó alsó sorban jelenik meg; hiányzó adatoknál nincs kitalált hatótáv.
+A tankban becsült benzin és a mai átlagfogyasztás alapján hátralévő kilométer. Legalább 1 km mérésig a mentett utak súlyozott átlaga az alap. Telefonon a tankkártyán, AA-n a borító hatótávcsempéjén jelenik meg; hiányzó adatoknál nincs kitalált hatótáv.
 
 ## Útinform (0.16.0)
 
-Helyzet és haladási irány alapján szűrt közeli események az Android Auto médiakártya alsó sorában. Opcionális, az útnaplótól független helyfigyelés; saját NAP HTTP Pull hozzáférés szükséges. [Regisztráció, beállítások és korlátok](docs/TRAFFIC.md). Éles NAP-adatfolyammal és Carpuride-on még nem ellenőrzött első változat.
+Kísérleti helyzet- és haladásiirány-alapú eseményszűrés. Az AA alsó sora jelenleg fixen a rádió neve; ott nem váltogatunk eseményeket. Opcionális, az útnaplótól független helyfigyelés; saját NAP HTTP Pull hozzáférés szükséges. [Regisztráció, beállítások és korlátok](docs/TRAFFIC.md). A nagy éles NAP-válasz letöltése már működik, de a vizsgált adatfolyam lineáris helyreferenciái még nem feloldhatók: ebből jelenleg nem jelennek meg közeli események.
 
 ## Képernyőképek
 

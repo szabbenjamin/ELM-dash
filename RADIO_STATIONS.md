@@ -43,3 +43,7 @@ A címek a hivatalos lejátszók konfigurációjából, illetve az ERF hivatalos
 2026-10-09-i laptopos próba: mind a hat URL HTTP 200, `audio/mpeg`, legalább 4096 bájt hangadat; ffprobe mindegyiken MP3/44,1 kHz hangfolyamot azonosított. A Mária Rádió mono, a többi sztereó. Ez pillanatnyi elérhetőségi/dekódolhatósági próba, nem rendelkezésre állási garancia vagy autós hallgatási teszt.
 
 A Szent István Rádió megvizsgált HTTPS-lejátszólistájának tanúsítványa a próba idején lejárt volt, ezért nem került a beépített válogatásba. TLS-ellenőrzést nem kapcsolunk ki rádióhallgatás miatt.
+
+## 2026-10-21: Ez az a nap! Rádió
+
+Hivatalos forrás: https://radio.ezazanap.hu/ (Közvetlen stream linkek). MP3 128 kbit/s: https://www.radioking.com/play/ez-az-a-nap-radio . HTTPS letöltési próba HTTP 200 és audio/mpeg választ, hangbájtokat adott; hallgatási autós teszt nem történt.

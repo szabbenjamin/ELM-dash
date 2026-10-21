@@ -48,8 +48,16 @@ data class JourneyRecord(
 data class FullRefill(
     val id: String, val atMs: Long, val pumpedLiters: Double? = null,
     val previousConsumedLiters: Double? = null, val previousHasGaps: Boolean = false,
-    val totalPaidHuf: Double? = null
+    val totalPaidHuf: Double? = null, val fuelName: String? = null
 ) {
+    /** Positive error means the app underestimated consumption. Never auto-calibrate a gap. */
+    val differenceLiters: Double? get() = pumpedLiters?.let { actual -> previousConsumedLiters?.let { actual - it } }
+    val differencePercent: Double? get() = differenceLiters?.let { difference ->
+        previousConsumedLiters?.takeIf { it > 0 }?.let { difference * 100 / it }
+    }
+    val suggestedMultiplier: Double? get() = if (previousHasGaps) null else pumpedLiters?.let { actual ->
+        previousConsumedLiters?.takeIf { it > 0 }?.let { actual / it }
+    }
     val hufPerLiter: Double? get() = totalPaidHuf?.let { total -> pumpedLiters?.takeIf { it > 0 }?.let { total / it } }
 }
 
@@ -90,11 +98,11 @@ class JourneyLog(initial: JourneyLogState = JourneyLogState(), private val id: (
         if (active.id == journeyId && active.petrolPrice == null) state = state.copy(active = active.copy(petrolPrice = price))
     }
 
-    fun fullTank(atMs: Long, pumpedLiters: Double? = null, totalPaidHuf: Double? = null) {
+    fun fullTank(atMs: Long, pumpedLiters: Double? = null, totalPaidHuf: Double? = null, fuelName: String? = null) {
         require(pumpedLiters == null || (pumpedLiters.isFinite() && pumpedLiters > 0 && pumpedLiters <= state.tank.capacityLiters))
         require(totalPaidHuf == null || (totalPaidHuf.isFinite() && totalPaidHuf > 0 && pumpedLiters != null && totalPaidHuf / pumpedLiters in 200.0..2000.0))
         val old = state.tank
-        val refill = FullRefill(id(), atMs, pumpedLiters, old.fullAtMs?.let { old.consumedLiters }, old.hasGaps, totalPaidHuf)
+        val refill = FullRefill(id(), atMs, pumpedLiters, old.fullAtMs?.let { old.consumedLiters }, old.hasGaps, totalPaidHuf, fuelName?.trim()?.take(120)?.takeIf { it.isNotBlank() })
         state = state.copy(tank = TankEstimate(old.capacityLiters, atMs), refills = (listOf(refill) + state.refills).take(100))
         previousTank = null // Do not debit the part of an interval before the new full-tank anchor.
     }

@@ -62,8 +62,6 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
     var resetDialog by rememberSaveable { mutableStateOf(false) }
     var dailyExpanded by rememberSaveable { mutableStateOf(false) }
     var refuelDialog by rememberSaveable { mutableStateOf(false) }
-    var paid by rememberSaveable { mutableStateOf("") }
-    var pumped by rememberSaveable { mutableStateOf("") }
     var exportMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -106,7 +104,7 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
         }
         item { TankCard(log.tank, state.range) }
         item {
-            Button(onClick = { pumped = ""; paid = ""; refuelDialog = true }, enabled = !state.simulated, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = { refuelDialog = true }, enabled = !state.simulated, modifier = Modifier.fillMaxWidth()) {
                 Text("Teletankoltam")
             }
             if (state.simulated) Text("Demó alatt a valódi tank és napló nem módosul.", fontSize = 12.sp)
@@ -135,9 +133,15 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(date(refill.atMs), fontWeight = FontWeight.SemiBold)
-                    Text("Tele jelölve • 45 l alapérték", fontSize = 13.sp)
+                    Text(refill.fuelName ?: "Benzintípus nincs megadva", fontWeight = FontWeight.SemiBold)
+                    Text("${value(refill.pumpedLiters, 2)} liter  •  ${value(refill.totalPaidHuf, 0)} Ft", fontSize = 24.sp, color = MaterialTheme.colorScheme.primary)
                     refill.pumpedLiters?.let { Text("Kúton betöltve: ${value(it, 2)} l", fontSize = 13.sp) }
                     refill.totalPaidHuf?.let { Text("Fizetve: ${value(it, 0)} Ft • ${value(refill.hufPerLiter, 1)} Ft/l", fontSize = 13.sp) }
+                    refill.differenceLiters?.let { difference ->
+                        Text("Tankolás − becslés: ${value(difference, 2)} l (${value(refill.differencePercent)}%). Pozitív: az app kevesebbet becsült.", fontSize = 12.sp)
+                        Text(if (refill.previousHasGaps) "Adathiány miatt ez nem tiszta becslési hiba; kalibrációra nem használható."
+                            else "Javasolt szorzó a jelenlegi korrekcióhoz: ${value(refill.suggestedMultiplier, 3)}. Nem alkalmazzuk automatikusan.", fontSize = 12.sp)
+                    }
                     refill.previousConsumedLiters?.let {
                         Text("Előző teletankolás óta megfigyelt: ${value(it, 2)} l" + if (refill.previousHasGaps) " • adathiányos" else "", fontSize = 12.sp)
                     }
@@ -149,29 +153,11 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
         text = { Text("Az aktuális út lezárul és új mérés kezdődik. A napi összesítés és a mentett utak megmaradnak.") },
         confirmButton = { TextButton(onClick = { controller.resetTrip(); resetDialog = false }) { Text("Nullázás") } },
         dismissButton = { TextButton(onClick = { resetDialog = false }) { Text("Mégse") } })
-    if (refuelDialog) {
-        val liters = pumped.replace(',', '.').toDoubleOrNull()
-        val total = paid.replace(',', '.').toDoubleOrNull()
-        val litersValid = pumped.isBlank() || (liters != null && liters.isFinite() && liters > 0 && liters <= KALOS_TANK_LITERS)
-        val priceValid = paid.isBlank() || (total != null && total.isFinite() && total > 0 && liters != null && liters > 0 && total / liters in 200.0..2000.0)
-        val valid = litersValid && priceValid
-        AlertDialog(onDismissRequest = { refuelDialog = false }, title = { Text("Teletankolás rögzítése") },
-            text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("A becsült szint most 100%-ra, 45 literre áll. A napi fogyasztás és az útnapló megmarad.")
-                OutlinedTextField(value = pumped, onValueChange = { pumped = it }, label = { Text("Betöltött liter (elhagyható)") },
-                    singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), isError = !valid)
-                OutlinedTextField(value = paid, onValueChange = { paid = it }, label = { Text("Fizetett összeg (Ft, elhagyható)") },
-                    singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), isError = !priceValid)
-                if (priceValid && total != null && liters != null && liters > 0)
-                    Text("Számított literár: ${value(total / liters)} Ft/l", fontWeight = FontWeight.SemiBold)
-                Text("A következő utak benzinköltségét a fizetett összegből és a betöltött literből számoljuk. Ár nélkül az előző megadott tankolási ár marad.", fontSize = 12.sp)
-                if (!valid) Text("Az összeghez add meg a litert is (0–45 l). A számított literár 200–2000 Ft/l lehet.", color = MaterialTheme.colorScheme.error)
-            } }, confirmButton = { TextButton(enabled = valid && !state.simulated, onClick = {
-                controller.markFullTank(if (pumped.isBlank()) null else liters, if (paid.isBlank()) null else total)
-                refuelDialog = false
-            }) { Text("Teletankolás mentése") } },
-            dismissButton = { TextButton(onClick = { refuelDialog = false }) { Text("Mégse") } })
-    }
+    if (refuelDialog) RefuelDialog(onDismiss = { refuelDialog = false }, onSave = { name, liters, total ->
+        controller.markFullTank(liters, total, name)
+        refuelDialog = false
+    })
+
 }
 
 @Composable

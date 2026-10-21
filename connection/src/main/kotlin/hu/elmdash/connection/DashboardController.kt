@@ -244,9 +244,9 @@ class DashboardController(
         computer.reset(); fuelWindow.reset()
         mutableState.update { it.copy(trip = computer.summary, journal = journeyLog.state) }
     }
-    fun markFullTank(pumpedLiters: Double? = null, totalPaidHuf: Double? = null) {
+    fun markFullTank(pumpedLiters: Double? = null, totalPaidHuf: Double? = null, fuelName: String? = null) {
         check(!demo) { "Demóban nem módosítható a valódi tank." }
-        journeyLog.fullTank(wallClock(), pumpedLiters, totalPaidHuf)
+        journeyLog.fullTank(wallClock(), pumpedLiters, totalPaidHuf, fuelName)
         journeyStore.save(journeyLog.state)
         mutableState.update { it.copy(journal = journeyLog.state) }
     }

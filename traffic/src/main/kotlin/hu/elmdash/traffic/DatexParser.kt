@@ -10,7 +10,7 @@ import javax.xml.parsers.DocumentBuilderFactory
  * No fabricated decoding of TMC/OpenLR/linear geometries. Unsupported records are counted.
  */
 object DatexParser {
-    const val MAX_BYTES = 5 * 1024 * 1024
+    const val MAX_BYTES = 24 * 1024 * 1024
     fun parse(bytes: ByteArray): TrafficFeed {
         require(bytes.size <= MAX_BYTES) { "Feed too large" }
         // Do not resolve entities, DTDs or remote schemas, including on Android's XML implementation.

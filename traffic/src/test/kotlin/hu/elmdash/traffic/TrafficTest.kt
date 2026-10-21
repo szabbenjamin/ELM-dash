@@ -53,6 +53,14 @@ class TrafficTest {
         <situationRecord id="one" xsi:type="Accident"><validity><validityStatus>active</validityStatus>$extra</validity>
         <groupOfLocations xsi:type="Point">$location<roadNumber>M3</roadNumber><directionBoundOnRoad>northBound</directionBoundOnRoad></groupOfLocations></situationRecord>
     """
+    @Test fun acceptsNationalSnapshotLargerThanOldLimit() {
+        val padding = " ".repeat(12 * 1024 * 1024)
+        val feed = DatexParser.parse(xml().toString(Charsets.UTF_8).replace("</d2LogicalModel>", "$padding</d2LogicalModel>").toByteArray())
+        assertEquals(1, feed.events.size)
+    }
+    @Test(expected = IllegalArgumentException::class) fun rejectsOversizedSnapshot() {
+        DatexParser.parse(ByteArray(DatexParser.MAX_BYTES + 1))
+    }
     @Test fun parsesNamespacedPoint() {
         val f = DatexParser.parse(xml()); assertEquals(now, f.published); assertEquals(1, f.events.size)
         assertEquals(0.0, f.events.single().direction!!,0.0); assertEquals("M3",f.events.single().road)

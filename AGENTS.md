@@ -1,6 +1,6 @@
 # Fejlesztő agentek belépési pontja
 
-Ez az ELM Dash Android-projekt. A felhasználó elsődleges célpontja **Android Auto**, a telefon kísérőfelület. Az aktuális átadás dátuma 2026-10-19, appverzió 0.16.17.
+Ez az ELM Dash Android-projekt. A felhasználó elsődleges célpontja **Android Auto**, a telefon kísérőfelület. Az aktuális átadás dátuma 2026-10-21, appverzió 0.17.4.
 
 ## Kezdés
 
@@ -18,7 +18,7 @@ Ez az ELM Dash Android-projekt. A felhasználó elsődleges célpontja **Android
 - Nap = helyi naptári nap, éjféli forduló. Út ettől független. Demó soha ne írja felül a valódi napot, tankot vagy útnaplót.
 - Friss RPM hiányában 180 s az út türelmi ideje; folyamatos 0 RPM esetén 120 s. A szolgáltatás-élettartam ne előzze meg a késleltetett lezárást.
 - Automatikus OBD/radio indulásnál a felhasználó kézi leállítása/szüneteltetése elsőbbséget kap.
-- Telefonos alsó menü: Műszerfal, Napló, Rádió. Kapcsolat a jobb felső fogaskeréken. Napi adatok és útnapló egy oldalon.
+- Telefonos alsó menü: Műszerfal, Napló, Szerviz, Rádió (ha a változat támogatja). Kapcsolat a jobb felső fogaskeréken. Napi adatok és útnapló egy oldalon.
 - Az AA dashboard médiafelületen kísérleti integráció. Ne ígérj hivatalos támogatást, garantált 1/3-os elrendezést vagy Play-elfogadást.
 
 ## Munkavégzés és ellenőrzés

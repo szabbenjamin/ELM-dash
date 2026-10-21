@@ -340,3 +340,58 @@ Trip, connection és média tesztek, mediaDebug build/lint sikeres. A megfigyelt
 ## 2026-10-19 – 0.16.17 commit előtti teljes ellenőrzés
 
 A GitHub workflow teljes Gradle parancsa helyben sikeres: elm/obd/trip/traffic, connection/auto/auto-media tesztek; phone/unsupported/media debug lint; mindhárom debug és phone release build. A változatszétválasztás frissen épített variánsokon sikeres. Buildtermék, telefonos mentés, képernyőkép és hitelesítő adat nem része a commitnak. A GitHub Actions futása ettől külön ellenőrzendő.
+
+## 2026-10-20 — 0.16.18 NAP letöltési korlát
+
+- `:traffic:test`, `:connection:testDebugUnitTest`, `:app:assembleMediaDebug`: sikeres.
+- 12 MiB szintetikus XML elfogadás és 24 MiB feletti visszautasítás regressziós teszt.
+- Helyi, nem commitolt éles XML-próba: 12 575 682 bájt; feldolgozás sikeres, 0 támogatott / 3145 kihagyott rekord. A mintában lineáris referenciapont + eltolás szerepel; nincs igazolt közeli esemény megjelenítés.
+- `scripts/verify_variants.py`: sikeres.
+- `adb install -r`: sikeres, mediaDebug 0.16.18. Telefonos felületi és autós megjelenítési próba nem történt.
+
+## 2026-10-21 — 0.17.0 autófenntartási funkciók
+
+- `:trip:test :connection:testDebugUnitTest :auto-media:testDebugUnitTest :app:assembleMediaDebug :app:lintMediaDebug`: sikeres. Rádiókatalógus 21 elem; hivatalos Ez az a nap stream HTTP 200/audio-mpeg próba sikeres.
+- Regresszió: két teletankolás eltérése, nulla/ismeretlen nevező, adathiány miatti kalibrációtiltás; dátum/km egymástól független szervizesedékesség; parkoló GPS-pont befagyasztása, újraindulás törlése, 120 s megerősítés, demó/előzetes motorjárás nélküli parkolás tiltása.
+- Változatizoláció ellenőrzése sikeres (más változatok korábbi APK-jai alapján); új mediaDebug build elkészült.
+- A telefon zárolt: UI, valódi parkolás/50 m gyaloglás, háttér GPS és időjárásos/szervizértesítés végponttól végpontig még nincs ellenőrizve. Feloldást kértünk. Nem írtunk teszt szervizt, tankolást vagy parkolóhelyet az éles telefonra.
+- Blokkfotó/AI még nem implementált: a feldolgozási szolgáltatás választása függőben. A kézi teletankolás megerősítése és az eltérés kijelzése elkészült.
+
+## 2026-10-21 — 0.17.2 blokk és tankolási felület
+
+- `:trip:test :connection:testDebugUnitTest :app:assembleMediaDebug :app:lintMediaDebug`: sikeres, diff whitespace ellenőrzés tiszta. Izolációellenőrzés sikeres (többi változat korábbi APK).
+- Parser tesztek: vegyes blokk (kávé kizárása), üzemanyaghoz rendelt negatív Ft kedvezmény, bizonytalan kupon/százalékos kedvezmény, végösszeg elutasítása, több üzemanyagtétel, I/l OCR-hiba. Benzintípus tárolási regresszió sikeres.
+- 0.17.1 telepítés és felületi próba Samsungon: új parkoló/szervizkártyák látszanak. Képválasztásból a helyi OCR ténylegesen beolvasta a szintetikus tesztblokkot, I/l tévesztést találtunk és kódban/tesztben javítottunk. Tankolást nem mentettünk.
+- Felhasználói UI-korrekció után 0.17.2 teljes képernyős hárommezős adatbevitel + összesítő készült. Végső telepítési kísérlet: `adb: no devices found`. Ez a verzió nincs igazoltan telepítve; kamera és az új összesítő végponttól végpontig még nem ellenőrzött.
+- Telefonra ideiglenesen másolt saját, mesterséges tesztkép: Download/elm-test-receipt.jpg. Újracsatlakozáskor törlendő, a felhasználó valódi képeihez nem nyúlunk.
+
+### 0.17.2 újracsatlakozás utáni telefonos próba
+
+- `adb install -r` sikeres, felületen 0.17.2 igazolt.
+- Képválasztás → helyi OCR → három szerkeszthető mező → Ellenőrzés sikeres. Mesterséges benzin/kávé/kedvezmény blokk: 20 liter, 11 700 Ft, 585 Ft/l; benzinfajta felismerve. Összesítő értékei és megerősítés látható. Nem mentettünk tankolást; Mégse gombbal kiléptünk.
+- Teljes képernyős adatbevitel képernyőképen vizuálisan ellenőrizve. Saját tesztkép és ideiglenes telefonos UI/screenshot fájlok törölve. Valódi blokk és kamerás teljes folyamat továbbra sincs igazolva.
+
+## 2026-10-21 — 0.17.3 automatikus parkolóhely
+
+- Connection egységtesztek, mediaDebug build/lint és diff-ellenőrzés sikeres. Változatizoláció sikeres (más variánsok korábbi buildjeivel).
+- Parking regresszió a régi enabled=false preferencia mellett is ment; engedélyvesztés nem írja felül a mentett helyet. Motorleállás, újraindítás és 120 s szabály tesztelve.
+- Adatmegőrző telefonos telepítés sikeres, 0.17.3 UI igazolt. Parkolókapcsoló nincs; nincs hiányzó helyengedély jelzés. Műszerfal és Napló tetején nincs szervizkártya; Napló új elrendezése képernyőképen is ellenőrizve.
+- Autó nélküli próba: tényleges GPS/motorleállás/50 m séta és futás közbeni engedélymegadás még nem volt végponttól végpontig tesztelve.
+
+## 2026-10-21 — 0.17.4 külön Szerviz menü
+
+MediaDebug build és lint sikeres, diff ellenőrzés tiszta. Variánsizoláció sikeres más változatok korábbi APK-jaival. Adatmegőrző telefonos telepítés; Szerviz fül közvetlen megnyitása és négy menüpont képernyőképen ellenőrizve. A mezők teljes szélességűek a hosszú címkékhez. Mentési és értesítési logikát nem módosítottunk, teszt szervizadatot nem mentettünk.
+
+### 0.17.4 debug parkolási előnézet
+
+Felhasználói kérésre aktuális telefonhely + véletlen 2,5 km tesztpont, csak memóriában. Valódi parkolóhelyet nem írtunk át. Telefonos térképhiba diagnózisa: Leaflet és csempék betöltve, DOM magasság 0. Explicit magasság után térkép és autójelölő telefonos képen igazolt. MediaDebug build/lint sikeres. A képernyőkép és aktuális hely nem kerül a repóba.
+
+Parkolási navigációgomb középre igazítása: mediaDebug build és adatmegőrző telefonos telepítés sikeres.
+
+### Google Maps gyalogos navigáció
+
+MediaDebug build/lint sikeres, adatmegőrző telepítés sikeres. Telefonon a parkolási előnézet gombja ténylegesen megnyitotta a Google Maps gyalogos navigációját (pontozott gyalogos útvonal, gyalogos időbecslés). Tesztpontra indult, valódi parkolóadat nem változott. A próbát leállítottuk.
+
+## 2026-10-21 — feltöltés előtti teljes ellenőrzés
+
+A GitHub workflow teljes Gradle parancsa helyben sikeres: elm/obd/trip/traffic és connection/auto/auto-media tesztek, három debug lint, három debug build és phone release. A telefonos parkolási tesztelőnézet bezárva, Activity tesztextra nélkül újranyitva. Személyes adat, tesztkép, helykoordináta és buildtermék nem része a commitnak.

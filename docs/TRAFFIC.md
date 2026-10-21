@@ -17,7 +17,7 @@ A hivatalos [használati útmutató](https://napportal.kozut.hu/#/download/usefu
 - Külön location foreground service, OBD- és útvonalnapló-függetlenül. Helyadat csak memóriában; a NAP-kérés nem tartalmaz GPS/OBD-adatot. Nem készül WebDAV-export ebből a figyelésből.
 - AA-csatlakozáskor indul, leváláskor leáll. A telefonos kézi próba AA nélkül legfeljebb 30 percig fut. Értesítésből és beállításból is leállítható; új AA-csatlakozás újraindíthatja, ha engedélyezett maradt.
 - GNSS-frissítés kérése 3 másodpercenként, legfeljebb 20 másodperces és 100 méternél nem rosszabb pontosságú helyek. Az Android tényleges ütemezése eltérhet.
-- HTTP letöltés 5 percenként, legfeljebb 25 másodperces hívással és 5 MiB válasszal, átirányítás nélkül. Hálózati hiba után a még friss memóriabeli adat használható; a forrás időbélyege és az utolsó letöltés is legfeljebb 15 perces lehet. Újrainduláskor új lekérés kell.
+- HTTP letöltés 5 percenként, legfeljebb 25 másodperces hívással és 24 MiB válasszal, átirányítás nélkül. Hálózati hiba után a még friss memóriabeli adat használható; a forrás időbélyege és az utolsó letöltés is legfeljebb 15 perces lehet. Újrainduláskor új lekérés kell.
 - DATEX II 2.x SituationPublication teljes pillanatképek. Koordinátás pont vagy explicit `locationForDisplay`; utóbbi csak reprezentatív pont, nem az egész útszakasz geometriája. TMC/OpenLR, többértelmű többpontos hely, ismeretlen eseménytípus, tesztadat, felfüggesztett esemény és ismétlődő érvényességi időszak kihagyva. Nincs kitalált koordináta.
 - Mozgáskor legfeljebb 3 percnyi légvonalbeli előretekintés, 2–8 km közötti sugár; ±55° a haladás irányához képest. Ha az esemény menetiránya ismert, ±65° egyezés is szükséges. Megbízható irány nélkül legfeljebb 1,5 km környezet.
 - Nincs térképi útillesztés és Waze/Maps-útvonal. Párhuzamos/közeli úton is lehet találat; a kijelzés nem állítja, hogy biztosan az esemény felé navigálsz. A távolság légvonalbeli becslés.
@@ -32,3 +32,7 @@ A hivatalos [használati útmutató](https://napportal.kozut.hu/#/download/usefu
 Az XML méretkorlátos, UTF-8; DTD és külső entitás tiltott. HTML bejelentkezési oldal nem számít sikeres üres adatfolyamnak. Előfizetési URL, nyers XML és GPS nem kerül naplóba, mentett UI-állapotba vagy Gitbe. Az app biztonsági mentése továbbra is tiltott. Az endpoint IP-címet természetesen lát, mint minden hálózati lekérésnél.
 
 Az első éles ellenőrzéshez fontos: feed formátuma és publikációs idő, koordináták elérhetősége, kihagyott rekordok aránya, érvényességi ablakok, frissítés és törlés. Sikeres build/fixture teszt nem bizonyít NAP-kompatibilitást vagy Carpuride-olvashatóságot.
+
+## 0.16.18 — éles NAP-próba
+
+A 2026-10-20-i válasz 12 575 682 bájt volt; a korábbi 5 MiB korlát elutasította. Új korlát 24 MiB, külön méret-, HTTP-, TLS-, hálózati és formátumhiba. Az éles XML feldolgozható, de 3145 rekordból jelenleg 0 támogatott, 3145 kihagyott. A megvizsgált helyhivatkozás lineáris útelem referenciapontja és métereltolása, nem közvetlen eseménykoordináta. Ezekhez további helyfeloldás szükséges; referenciapontot nem tekintünk eseményhelynek. A hozzáférési URL és a nyers feed nem része a repónak.

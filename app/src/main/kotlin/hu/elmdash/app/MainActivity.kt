@@ -18,6 +18,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT))
-        setContent { ElmDashboard(DashboardGraph.get(this), BuildConfig.FLAVOR, radioContent()) }
+        setContent { ElmDashboard(DashboardGraph.get(this), BuildConfig.FLAVOR, radioContent(), parkingPreview = BuildConfig.DEBUG && intent.getBooleanExtra("parking_preview", false)) }
     }
 }

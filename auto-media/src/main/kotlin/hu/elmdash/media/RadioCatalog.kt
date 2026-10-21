@@ -17,6 +17,7 @@ internal object RadioCatalog {
         RadioStation("rock", "103.9 a ROCK", "https://stream.rockradio.hu", true),
         RadioStation("info", "InfoRádió", "https://stream.infostart.hu/stream", true),
         RadioStation("oxygen-rock", "Oxygen Classic Rock", "https://oxygenmusic.hu:8443/oxygenclassicrock_128", true),
+        RadioStation("ezazanap", "Ez az a nap! Rádió", "https://www.radioking.com/play/ez-az-a-nap-radio", true),
         RadioStation("maria-hu", "Mária Rádió", "https://stream.mariaradio.hu:8000/mr", true),
         RadioStation("katolikus-hu", "Magyar Katolikus Rádió", "https://katolikusradio.hu:8001/live_hi.mp3", true),
         RadioStation("ucb1", "UCB 1 (angol)", "https://listen-ucb.sharp-stream.com/55_ucb_1_128_mp3", true),

@@ -19,7 +19,8 @@ class JourneyStoreTest {
         val context=RuntimeEnvironment.getApplication()
         context.getSharedPreferences("elm-journal",0).edit().clear().commit()
         val c=DashboardController(context,{currentTime},backgroundScope,wallClock={100_000+currentTime}) { _,_,_-> DemoTransport {currentTime} }
-        c.markFullTank(20.0,12000.0)
+        c.markFullTank(20.0,12000.0,"95 E10")
+        assertEquals("95 E10", JourneyStore(context).load().refills.single().fuelName)
         assertEquals(12000.0,JourneyStore(context).load().refills.single().totalPaidHuf!!,0.0)
         c.startLive("00:11:22:33:44:55",false)
         advanceTimeBy(30_000);runCurrent()

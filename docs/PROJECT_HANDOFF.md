@@ -1,6 +1,6 @@
 # ELM Dash — projektátadás és termékkövetelmények
 
-Állapot: **2026-10-19 · 0.16.17**. Ez a fájl a beszélgetés nélkül is használható fejlesztői összefoglaló. A régebbi tesztek bizonyítékai a [VALIDATION.md](../VALIDATION.md)-ben, a buildparancsok a [README.md](../README.md)-ben vannak.
+Állapot: **2026-10-21 · 0.17.2**. Ez a fájl a beszélgetés nélkül is használható fejlesztői összefoglaló. A régebbi tesztek bizonyítékai a [VALIDATION.md](../VALIDATION.md)-ben, a buildparancsok a [README.md](../README.md)-ben vannak.
 
 ## Aktuális felület (0.16.17)
 
@@ -262,3 +262,48 @@ A megfigyelt 0 RPM lezárási küszöbe 8 helyett 120 másodperc. A futásidő n
 ## 0.16.17 – Állandó rádiónév az alsó sorban
 
 A felhasználó kérésére a média lejátszó alsó szövegsora kizárólag a kiválasztott rádió neve. Nem vált motoradatra, hatótávra vagy Útinformra. A lejátszási állapot továbbra is a vezérlők/PlaybackState feladata. Az Útinform-adatgyűjtés beállítása változatlan, de ezen a soron nincs eseménymegjelenítés.
+
+### NAP méretkorlát-javítás (0.16.18)
+24 MiB válasz engedélyezett; részletes, URL-t nem közlő hibák. Éles 12,6 MB XML feldolgozása ellenőrizve, de valamennyi rekord helyadata/típusa jelenleg kihagyott; események tényleges megjelenítéséhez helyfeloldás kell. Lásd TRAFFIC.md.
+
+## 0.17.0 — autófenntartási funkciók, részleges blokkos folyamat
+
+- Parkolóhely: külön opt-in a Műszerfalon; friss, legfeljebb 10 s / 25 m GPS-fix az első megfigyelt 0 RPM-nél, előtte járó motor szükséges. Újraindulás törli, 120 s után parkolás. OBD foreground service alatt 2 s GPS-frissítés, pontos + háttérhelyengedéllyel, bekapcsolás után OBD újraindítás. Az időpont és pontosság mentett, kétes / hiányzó fixből nincs helyettesítő adat. A rendszer nem tud garantálni pontos GPS-t a motorleállás pillanatában.
+- Telefonos Műszerfal láthatósága alatt friss helyet kér. 50 m-en túli eltávolodásnál (mindkét pont hibasugarán kívül) OSM-kártya és gyalogos OSM-útvonaltervező. Új motorindulás nélkül a mentett függő pont 2 perc után a UI-ban parkolásnak számít akkor is, ha az OBD-szolgáltatás időközben leállt. Ez utolsó ismert hely, nem folyamatos autókövetés.
+- Szerviznapló: Napló és Műszerfal kártyából teljes képernyős szerkesztő. Elvégzés dátuma/km, opcionális következő km/hónap, szabad név/megjegyzés. Nincs kitalált gyári intervallum. Kilométeróra kézzel frissítendő; OBD-mérésből nem következtetünk teljes járműfutásra. Legutolsó azonos nevű szerviz határozza meg a következő esedékességet, 30 nap / 500 km előjelzéssel. WorkManager napi értesítés (Android késleltetheti).
+- Külön opt-in hűvös idő emlékeztető: Open-Meteo, legutóbbi legfeljebb 7 napos parkolóhely 0,01 fokra kerekítve. 7 °C vagy az előző legfeljebb 7 napos értékhez képest 10 °C lehűlés, legfeljebb heti értesítés. Nem IAT és nem TPMS. Internet / parkolóhely nélkül nincs időjárásos jelzés.
+- Teletankolás: kötelező tele-megerősítés. Csak üzemanyag nettó fizetendő összege, kedvezmény után. Két teletankolás közt eltérés literben és a becsült mennyiség százalékában; adathiánynál nem kalibrálható. Javasolt szorzó kijelzés, automatikus módosítás nincs.
+- Ez az a nap! Rádió a hivatalos MP3 streammel bekerült.
+- **Még nincs kész:** blokk fotózása/felismerése, tételek és kedvezmények automatikus elkülönítése. A felhasználónak feltett döntés: külön OpenAI API szerver (külön költség), vagy helyi OCR. Ebbe a Codex-chatbe nincs automatikus telefonos képbefogadó végpont. A válasz függőben; blokkfotót nem küldünk külső szolgáltatásnak. A felismert adatokhoz majd szerkeszthető megerősítő lépés és bizonytalan kedvezmények jelzése szükséges.
+
+## 0.17.2 — helyi blokkfelismerés és egyszerű tankolási folyamat
+
+A felhasználó helyi OCR-t választott, felhő nélkül. Bundled ML Kit Latin 16.0.1, nincs képfeltöltő/API-végpont. Fotózás FileProvider cache-fájlba vagy képválasztás; legfeljebb 2400 px hosszú oldalra dekódolás API 28+-on. A kép nem kerül naplóba/WebDAV-ra; saját cache-kép felismerés után törlődik, félbehagyott kamera esetén következő belépéskor 24 órán túli maradványok törlődnek. Kiválasztott eredeti képet nem törlünk.
+
+A konzervatív parser csak az egyértelmű üzemanyagtételből vesz litert és összeget; összesent soha. Explicit üzemanyag-negatív Ft kedvezményt levon, egyéb kupon/százalékos/vegyes kedvezménynél összeg üres és kézi pontosítás szükséges. A felismert nyers szöveg és magyarázat lenyitható, memóriában él. Gyakori OCR I/l csere kezelve a liter mennyiségnél. Nincs garancia minden blokkelrendezés felismerésére.
+
+A végső termékkérés: kevés kognitív terhelés. Teljes képernyős Tankolás → három mező (benzinfajta, liter, kedvezmény utáni üzemanyag-Ft) → Ellenőrzés → nagy összesítő + tele-megerősítés → Mentés. Nem mentünk OCR-ből automatikusan. Külön explicit „csak tele tank” út adatok nélkül megőrzi a korábbi működést. A benzinfajta opcionális új mező a FullRefill/JourneyStore-ban, régi rekordok továbbra is betölthetők. Naplóban nagy liter/Ft és benzinfajta.
+
+Telefon: újracsatlakoztatás után 0.17.2 adatmegőrző telepítése sikeres. Szintetikus blokk képválasztásos OCR-próbája: benzin 95 E10, 20 liter, 11 700 Ft (300 Ft üzemanyagkedvezmény levonva, kávé kizárva), 585 Ft/l. A három mező és az ellenőrző összesítő telefonon ellenőrizve, mentés nélkül megszakítva. Saját tesztkép törölve. Valódi blokk/kamerás teljes folyamat még nincs ellenőrizve.
+
+## 0.17.3 — automatikus parkolóhely és szervizkártya
+
+Felhasználói kérésre nincs parkolóhely opt-in kapcsoló. A régi enabled preferenciát nem olvassuk. Az OBD szolgáltatás pontos + háttérbeli helyengedéllyel automatikusan figyeli a parkolóhelyet; futás közben megadott engedélynél is felveszi a location foreground típust. A motorleállás/GPS-frissesség/120 s/50 m szabály változatlan. Engedélyvesztéskor nincs új helyrögzítés, a korábbi parkolóhely megmarad. A műszerfal hiányzó helyengedélyhez gombot ad; a beállításokból visszatérve újraellenőrzi. Az útvonalrögzítés külön opt-in marad.
+
+A szervizkártya a Műszerfalon a motoradatok után, a Naplóban a tankolási összesítés után található, nem az oldal tetején.
+
+## 0.17.4 — külön Szerviz menüpont
+
+A szervizadatok kizárólag az alsó sáv Szerviz pontján érhetők el. Közvetlen, görgethető oldal, nincs köztes kártya vagy megnyitandó modal. Műszerfal és Napló szervizkártyái eltávolítva; adatok, értesítések és mentési működés változatlanok. Telefonos sorrend: Műszerfal, Napló, Szerviz, Rádió; rádió nélküli variánsban az első három.
+
+### Parkolóhely telefonos előnézet és térképjavítás
+
+Debug MainActivity `parking_preview=true` extra: kizárólag memóriabeli, véletlen irányú 2,5 km-es pont az első friss telefonhelyből. Külön TESZT jelzés, bezárható, tíz perc kompozíciós idő után kikapcsol; nézet újranyitásakor újraindulhat. Nem módosít ParkingStore-t, naplót, útvonalat vagy WebDAV-adatot. Előnézethez hálózati hely is elfogadott, max. 500 m hibával; valódi parkolás határai változatlanok. Release figyelmen kívül hagyja az extrát.
+
+Telefonon felfedezett fehér OSM: a DOM térképmagasság 0 px volt a százalékos méretezés ellenére. Javítás explicit 220 CSS px a 220 dp WebView-hoz, ResizeObserver/invalidateSize, parkolóhely változásakor új WebView.
+
+A parkolókártya Navigálás az autóhoz gombja vízszintesen középre igazított (felhasználói pontosítás).
+
+### Gyalogos navigáció Google Maps alkalmazással
+
+Felhasználói kérésre a középre igazított gomb explicit com.google.android.apps.maps célcsomagnak küld google.navigation:q=lat,lon&mode=w intentet. A kiindulópontot a Maps az aktuális helyből kezeli. Az alkalmazáson belüli alaptérkép továbbra is OSM. Hiányzó/letiltott Google Maps esetén érthető üzenet, nincs csendes böngészős vagy autós navigációs fallback. Hivatalos specifikáció: https://developer.android.com/guide/components/google-maps-intents .
