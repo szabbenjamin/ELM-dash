@@ -243,17 +243,17 @@ class DashboardController(
         computer.reset(); fuelWindow.reset()
         mutableState.update { it.copy(trip = computer.summary, journal = journeyLog.state) }
     }
-    fun recordRefill(liters: Double?, paid: Double?, name: String?, photo: String?, full: Boolean) {
+    fun recordRefill(liters: Double?, paid: Double?, name: String?, photo: String?, full: Boolean, station: String? = null) {
         check(!demo)
-        if (full) { markFullTank(liters, paid, name, photo); return }
-        journeyLog.partialTank(wallClock(), requireNotNull(liters), paid, name, photo)
+        if (full) { markFullTank(liters, paid, name, photo, station); return }
+        journeyLog.partialTank(wallClock(), requireNotNull(liters), paid, name, photo, station)
         journeyStore.save(journeyLog.state)
         CarWidget.changed(context, true)
         mutableState.update { it.copy(journal=journeyLog.state) }
     }
-    fun markFullTank(pumpedLiters: Double? = null, totalPaidHuf: Double? = null, fuelName: String? = null, receiptPhoto: String? = null) {
+    fun markFullTank(pumpedLiters: Double? = null, totalPaidHuf: Double? = null, fuelName: String? = null, receiptPhoto: String? = null, station: String? = null) {
         check(!demo) { "Demóban nem módosítható a valódi tank." }
-        journeyLog.fullTank(wallClock(), pumpedLiters, totalPaidHuf, fuelName, receiptPhoto)
+        journeyLog.fullTank(wallClock(), pumpedLiters, totalPaidHuf, fuelName, receiptPhoto, station)
         journeyStore.save(journeyLog.state)
         CarWidget.changed(context,true)
         mutableState.update { it.copy(journal = journeyLog.state) }

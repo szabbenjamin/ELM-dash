@@ -15,7 +15,7 @@ class JourneyStore(private val context: Context) {
         JourneyLogState(TankEstimate(t.getDouble("capacity"), t.longOrNull("fullAt"), t.getDouble("consumed"), t.getBoolean("gaps"), t.getBoolean("estimate"), t.optDouble("learnedFactor", 1.0).takeIf { it.isFinite() && it in 1.0..2.0 } ?: 1.0, t.optInt("learningSamples", 0).coerceAtLeast(0), t.optDouble("addedLiters", 0.0).takeIf { it.isFinite() && it >= 0 } ?: 0.0),
             j.getJSONArray("journeys").objects().mapNotNull { runCatching { record(it) }.getOrNull() }.take(200),
             j.getJSONArray("refills").objects().mapNotNull { runCatching {
-                FullRefill(it.getString("id"), it.getLong("at"), it.doubleOrNull("pumped"), it.doubleOrNull("consumed"), it.getBoolean("gaps"), it.doubleOrNull("paid"), it.optString("fuelName").takeIf { name -> name.isNotBlank() }, it.optString("receiptPhoto").takeIf { name -> name.matches(Regex("[a-f0-9-]+\\.jpg")) }, it.optBoolean("isFull", true), it.doubleOrNull("cyclePumped"))
+                FullRefill(it.getString("id"), it.getLong("at"), it.doubleOrNull("pumped"), it.doubleOrNull("consumed"), it.getBoolean("gaps"), it.doubleOrNull("paid"), it.optString("fuelName").takeIf { name -> name.isNotBlank() }, it.optString("receiptPhoto").takeIf { name -> name.matches(Regex("[a-f0-9-]+\\.jpg")) }, it.optBoolean("isFull", true), it.doubleOrNull("cyclePumped"), it.optString("station").takeIf { name -> name.isNotBlank() })
             }.getOrNull() }.take(100), j.optJSONObject("active")?.let { record(it) })
     }.getOrDefault(JourneyLogState())
 
@@ -27,7 +27,7 @@ class JourneyStore(private val context: Context) {
             .put("journeys", JSONArray().also { a -> state.journeys.take(200).forEach { a.put(record(it)) } })
             .put("refills", JSONArray().also { a -> state.refills.take(100).forEach {
                 a.put(JSONObject().put("id", it.id).put("at", it.atMs).put("pumped", it.pumpedLiters)
-                    .put("consumed", it.previousConsumedLiters).put("gaps", it.previousHasGaps).put("paid", it.totalPaidHuf).put("fuelName", it.fuelName).put("receiptPhoto", it.receiptPhoto).put("isFull", it.isFull).put("cyclePumped", it.cyclePumpedLiters))
+                    .put("consumed", it.previousConsumedLiters).put("gaps", it.previousHasGaps).put("paid", it.totalPaidHuf).put("fuelName", it.fuelName).put("receiptPhoto", it.receiptPhoto).put("isFull", it.isFull).put("cyclePumped", it.cyclePumpedLiters).put("station", it.station))
             } }).put("active", state.active?.let { record(it) })
         prefs.edit().putString("v1", json.toString()).apply()
         CarWidget.changed(context)

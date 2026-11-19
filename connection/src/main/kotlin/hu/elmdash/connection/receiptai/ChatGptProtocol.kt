@@ -37,7 +37,7 @@ internal object ChatGptProtocol {
     fun granted(token:JSONObject) = token.optString("scope").split(' ').containsAll(listOf("chatgpt.tokens.use.direct","resource.invoke"))
 }
 
-data class AiReceipt(val fuel:String?, val liters:Double?, val paidHuf:Double?, val explanation:String)
+data class AiReceipt(val fuel:String?, val liters:Double?, val paidHuf:Double?, val explanation:String, val station:String? = null)
 internal object AiReceiptResult {
     fun parse(text:String):AiReceipt {
         val clean=text.trim().let { value ->
@@ -52,6 +52,6 @@ internal object AiReceiptResult {
         if(paid!=null && paid>90000)throw ReceiptAiException("A felismert üzemanyagösszeg túl nagy. Ellenőrizd és add meg kézzel.")
         if(liters!=null && paid!=null && paid/liters !in 200.0..2000.0)throw ReceiptAiException("A felismert liter és összeg nem ad életszerű literárat. Ellenőrizd és add meg kézzel.")
         if(j.optString("currency")!="HUF")throw ReceiptAiException("A blokk forintos pénzneme nem igazolható. Add meg kézzel az adatokat.")
-        return AiReceipt(if(j.isNull("fuel"))null else j.getString("fuel").take(120),liters,paid,j.optString("explanation").take(2000))
+        return AiReceipt(if(j.isNull("fuel"))null else j.getString("fuel").take(120),liters,paid,j.optString("explanation").take(2000), if(j.isNull("station")) null else j.optString("station").trim().take(240).takeIf { it.isNotBlank() })
     }
 }

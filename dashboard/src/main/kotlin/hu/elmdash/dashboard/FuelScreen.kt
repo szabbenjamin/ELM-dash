@@ -61,6 +61,7 @@ internal fun FuelScreen(controller: DashboardController, state: DashboardState) 
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     refill.receiptPhoto?.let { photo -> TextButton(onClick = { receipt = photo }) { Text("Blokkfotó megnyitása") } }
                     Text(date(refill.atMs) + if(refill.isFull) " · Tele tank" else " · Részleges", fontWeight = FontWeight.SemiBold)
+                    refill.station?.let { Text(it, fontWeight=FontWeight.SemiBold) }
                     Text(refill.fuelName ?: "Benzintípus nincs megadva", fontWeight = FontWeight.SemiBold)
                     Text("${value(refill.pumpedLiters, 2)} liter  •  ${value(refill.totalPaidHuf, 0)} Ft", fontSize = 24.sp, color = MaterialTheme.colorScheme.primary)
                     refill.pumpedLiters?.let { Text("Kúton betöltve: ${value(it, 2)} l", fontSize = 13.sp) }
@@ -77,8 +78,8 @@ internal fun FuelScreen(controller: DashboardController, state: DashboardState) 
             }
         }
     }
-    if (refuelDialog) RefuelDialog(onDismiss = { refuelDialog = false }, onSave = { name, liters, total, photo, full ->
-        controller.recordRefill(liters, total, name, photo, full)
+    if (refuelDialog) RefuelDialog(onDismiss = { refuelDialog = false }, onSave = { name, liters, total, photo, full, station ->
+        controller.recordRefill(liters, total, name, photo, full, station)
         refuelDialog = false
     })
     receipt?.let { ReceiptPhotoDialog(it) { receipt = null } }

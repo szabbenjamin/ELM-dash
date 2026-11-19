@@ -39,7 +39,7 @@ class JourneyStoreTest {
             sources = setOf(FuelSource.MAP_ESTIMATE), profile = "Kalos",
             stats = JourneyStats(minVoltage=12.1, maxVoltage=14.5, minIat=18.0, maxIat=51.0))
         val state = JourneyLogState(TankEstimate(fullAtMs = 1000, consumedLiters = 1.2, learnedFactor = 1.15, learningSamples = 3, addedLiters = 10.0), listOf(record.copy(id = "ended", endedAtMs = 2000, end = JourneyEnd.STOPPED)),
-            listOf(FullRefill("full", 1000, 24.5, isFull=false, cyclePumpedLiters=30.0)), record)
+            listOf(FullRefill("full", 1000, 24.5, isFull=false, cyclePumpedLiters=30.0, station="Minta kút")), record)
         store.save(state)
         assertEquals(state, store.load())
         val restored = JourneyLog(store.load())

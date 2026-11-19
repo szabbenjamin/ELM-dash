@@ -1,6 +1,6 @@
 # Fejlesztő agentek belépési pontja
 
-Ez az ELM Dash Android-projekt. A felhasználó elsődleges célpontja **Android Auto**, a telefon kísérőfelület. Az aktuális átadás dátuma 2026-10-26, appverzió 0.24.0.
+Ez az ELM Dash Android-projekt. A felhasználó elsődleges célpontja **Android Auto**, a telefon kísérőfelület. Az aktuális átadás dátuma 2026-10-26, appverzió 0.25.0.
 
 ## Kezdés
 

@@ -463,3 +463,10 @@ Trip/connection tesztek, mediaDebug lint/build és mind a négy változat build/
 Nyilvános Claude FM live HLS: yt-dlp referencia és saját visitor/player resolver is 5 s AAC hangot hibamentesen dekódolt ffmpeggel. A weboldal egyszerű muxolt streamje nem volt elég, a beépített út külön audio renditiont kér. Samsungon mediaDebug adatmegőrző telepítés; Claude FM MediaSession PLAYING, hiba nélkül, majd szünet/újraindítás után a felület is „Szól az internetes rádió”. Emberi meghallgatás és AA-fejegységes próba nem történt. Próba végén szünet. Sorrendszerkesztő megnyitva, Claude FM feljebb helyezése UI dumpban igazolt, próbasorrend visszaállítva. Változatizoláció script sikeres (más variánsok korábbi APK-i). Személyes screenshot és lejáró stream URL nem kerül a repóba.
 
 0.24.0 végső ellenőrzés: mediaDebug build és lint sikeres; 44 auto-media egységteszt, 0 hiba. A két korábbi tankszint/hatótáv tesztet az előző verzióban bevezetett biztonsági levonás várható értékeire igazítottuk.
+
+## 0.25.0 — egyszerű blokkbeolvasás és benzinkút (2026-11-19)
+
+- `:trip:test :connection:testDebugUnitTest :app:assembleMediaDebug :app:lintMediaDebug`: sikeres. A belépés utáni modellbetöltés pontosítása után media build/lint újra sikeres.
+- Teszt: állomás mező JSON-feldolgozás/mentés; régi adatok kompatibilitása; helyadat frissesség/pontosság. `scripts/verify_variants.py`: sikeres, a nem média APK-k korábbi buildből származnak.
+- Fizikai Samsungon a 0.25.0 mediaDebug frissítés telepítve. Tankolás oldal és forrásválasztó vizuálisan ellenőrizve: egy Blokk beolvasása CTA, Fájl feltöltése/Befotózás párbeszéd, szerkeszthető benzinkút mező, teletank checkbox.
+- Nem mentettünk teszttankolást. Az új állomásfelismerés teljes felhős menetét valódi blokkal és az új helyadattal még nem teszteltük; a becslés mentés előtt ellenőrizendő. AA/autós próba ehhez nem történt.

@@ -51,6 +51,8 @@ class ChatGptProtocolTest {
         assertThrows(Exception::class.java) { AiReceiptResult.parse("Commentary $receipt") }
     }
     @Test fun receiptFieldsRemainSeparateAndUncertainAmountCanStayNull() {
+        assertNull(AiReceiptResult.parse(receipt).station)
+        assertEquals("Minta kút, Minta utca 1.",AiReceiptResult.parse(JSONObject(receipt).put("station","Minta kút, Minta utca 1.").toString()).station)
         val parsed=AiReceiptResult.parse(receipt)
         assertEquals(20.0,parsed.liters!!,0.0);assertEquals(12000.0,parsed.paidHuf!!,0.0)
         assertNull(AiReceiptResult.parse(JSONObject(receipt).put("fuel_paid_huf",JSONObject.NULL).toString()).paidHuf)

@@ -18,12 +18,13 @@ import java.util.Locale
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Double?, String?, Boolean) -> Unit) {
+internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Double?, String?, Boolean, String?) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     var photo by remember { mutableStateOf<ByteArray?>(null) }
     var saving by remember { mutableStateOf(false) }
     var saveError by remember { mutableStateOf<String?>(null) }
+    var station by rememberSaveable { mutableStateOf("") }
     var name by rememberSaveable { mutableStateOf("") }
     var litersText by rememberSaveable { mutableStateOf("") }
     var paidText by rememberSaveable { mutableStateOf("") }
@@ -44,7 +45,7 @@ internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Doub
                 }
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(16.dp)) {
                     if (!review) {
-                        ReceiptCapture(onSuggestion={ fuel, l, h -> name=fuel; litersText=l; paidText=h; onlyFull=false; full=false },onBusy={busy=it}, onPhoto={photo=it})
+                        ReceiptCapture(onSuggestion={ fuel, l, h, place -> station=place; name=fuel; litersText=l; paidText=h; onlyFull=false; full=false },onBusy={busy=it}, onPhoto={photo=it})
                         if (!onlyFull) {
                             OutlinedTextField(name,{name=it.take(120)},label={Text("Milyen benzin?")},placeholder={Text("Például: 95 E10")},modifier=Modifier.fillMaxWidth(),singleLine=true)
                             OutlinedTextField(litersText,{litersText=it},label={Text("Hány litert tankoltál?")},suffix={Text("liter")},textStyle=LocalTextStyle.current.copy(fontSize=28.sp,fontWeight=FontWeight.Bold),modifier=Modifier.fillMaxWidth(),singleLine=true,keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.Decimal))
@@ -52,11 +53,13 @@ internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Doub
                             Text("Kedvezmények után, a többi vásárlás nélkül.",style=MaterialTheme.typography.bodySmall)
                             if (valid) Text("${number(paid!!/liters!!,1)} Ft/l",color=MaterialTheme.colorScheme.primary)
                         }
+                        OutlinedTextField(station,{station=it.take(240)},label={Text("Benzinkút / cím (ellenőrizhető becslés)")},modifier=Modifier.fillMaxWidth())
                         TextButton(onClick={onlyFull=!onlyFull}) { Text(if(onlyFull) "Megadom a tankolás adatait" else "Nincs blokk/adat – csak a tele tankot jelölöm") }
                     } else {
                         Card(Modifier.fillMaxWidth()) {
                             Column(Modifier.padding(22.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
                                 Text(if(onlyFull) "Tele tank • adatok nélkül" else name,style=MaterialTheme.typography.titleLarge)
+                                if(station.isNotBlank()) Text(station)
                                 if (!onlyFull) {
                                     Text("${number(liters,2)} liter",fontSize=36.sp,fontWeight=FontWeight.Bold,color=MaterialTheme.colorScheme.primary)
                                     Text("${number(paid,0)} Ft",fontSize=36.sp,fontWeight=FontWeight.Bold)
@@ -85,7 +88,7 @@ internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Doub
                                     try { target.writeBytes(bytes); target.name } catch(e:Exception) { target.delete(); throw e }
                                 }
                             }
-                            onSave(if(onlyFull)null else name,if(onlyFull)null else liters,if(onlyFull)null else paid,file,full)
+                            onSave(if(onlyFull)null else name,if(onlyFull)null else liters,if(onlyFull)null else paid,file,full,station.takeIf { it.isNotBlank() })
                         } catch(e:Exception) { saveError="A mentés nem sikerült. Próbáld újra." } finally { saving=false }
                     }
                 } else review=true},

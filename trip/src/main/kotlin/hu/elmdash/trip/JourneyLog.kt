@@ -59,7 +59,7 @@ data class FullRefill(
     val id: String, val atMs: Long, val pumpedLiters: Double? = null,
     val previousConsumedLiters: Double? = null, val previousHasGaps: Boolean = false,
     val totalPaidHuf: Double? = null, val fuelName: String? = null, val receiptPhoto: String? = null,
-    val isFull: Boolean = true, val cyclePumpedLiters: Double? = null
+    val isFull: Boolean = true, val cyclePumpedLiters: Double? = null, val station: String? = null
 ) {
     /** Positive error means the app underestimated consumption. Never auto-calibrate a gap. */
     val differenceLiters: Double? get() = (cyclePumpedLiters ?: pumpedLiters)?.takeIf { isFull }?.let { actual -> previousConsumedLiters?.let { actual - it } }
@@ -114,22 +114,22 @@ class JourneyLog(initial: JourneyLogState = JourneyLogState(), private val id: (
             hasGaps = state.tank.fullAtMs != null || state.tank.hasGaps))
     }
 
-    fun partialTank(atMs: Long, liters: Double, paid: Double?, name: String?, photo: String?) {
+    fun partialTank(atMs: Long, liters: Double, paid: Double?, name: String?, photo: String?, station: String? = null) {
         require(liters.isFinite() && liters > 0 && liters <= state.tank.capacityLiters)
         require(paid == null || (paid.isFinite() && paid > 0 && paid / liters in 200.0..2000.0))
         val old = state.tank
         val refill = FullRefill(id(), atMs, liters, totalPaidHuf=paid, fuelName=name,
-            receiptPhoto=photo, isFull=false)
+            receiptPhoto=photo, isFull=false, station=station?.trim()?.take(240)?.takeIf { it.isNotBlank() })
         state = state.copy(tank=old.copy(addedLiters=old.addedLiters+liters),
             refills=(listOf(refill)+state.refills).take(100))
         previousTank = null
     }
 
-    fun fullTank(atMs: Long, pumpedLiters: Double? = null, totalPaidHuf: Double? = null, fuelName: String? = null, receiptPhoto: String? = null) {
+    fun fullTank(atMs: Long, pumpedLiters: Double? = null, totalPaidHuf: Double? = null, fuelName: String? = null, receiptPhoto: String? = null, station: String? = null) {
         require(pumpedLiters == null || (pumpedLiters.isFinite() && pumpedLiters > 0 && pumpedLiters <= state.tank.capacityLiters))
         require(totalPaidHuf == null || (totalPaidHuf.isFinite() && totalPaidHuf > 0 && pumpedLiters != null && totalPaidHuf / pumpedLiters in 200.0..2000.0))
         val old = state.tank
-        val refill = FullRefill(id(), atMs, pumpedLiters, old.fullAtMs?.let { old.consumedLiters }, old.hasGaps, totalPaidHuf, fuelName?.trim()?.take(120)?.takeIf { it.isNotBlank() }, receiptPhoto, cyclePumpedLiters=pumpedLiters?.let { it + old.addedLiters })
+        val refill = FullRefill(id(), atMs, pumpedLiters, old.fullAtMs?.let { old.consumedLiters }, old.hasGaps, totalPaidHuf, fuelName?.trim()?.take(120)?.takeIf { it.isNotBlank() }, receiptPhoto, cyclePumpedLiters=pumpedLiters?.let { it + old.addedLiters }, station=station?.trim()?.take(240)?.takeIf { it.isNotBlank() })
         val ratio = refill.suggestedMultiplier
         // Small top-ups and extreme discrepancies are not reliable calibration evidence.
         val eligible = old.fullAtMs != null && !old.hasGaps &&
