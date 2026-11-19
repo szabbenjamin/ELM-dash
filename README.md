@@ -411,3 +411,21 @@ A 0.12.1 a felhasználó kérésére az ár nélküli régi utakhoz is egyszer r
 ### ChatGPT-s blokkbeolvasás (0.19.0)
 
 A tankolási blokk fotójából ChatGPT-belépéssel kérhető az üzemanyag, liter és kedvezmény utáni összeg felismerése. A fotó csak a külön feldolgozásgombbal kerül az OpenAI-hoz; mentés előtt ellenőrzés és teletank-megerősítés szükséges. A helyi OCR és kézi bevitel megmaradt. [Beállítás, működés és adatkezelés](docs/RECEIPT_CHATGPT.md).
+
+### Statisztikák és útgrafikonok (0.20.0)
+A Napló tetején a **Tankolási és közlekedési diagramok** alatt napi, heti vagy havi bontás választható: kilométer, elfogyasztott liter, átlagfogyasztás, tankolt liter és tankolási költség. Érints meg egy oszlopot vagy használd a csúszkát a pontos értékhez. Az **Út részletei és térkép** nézetben GPS-pontonkénti átlagsebesség, akkufeszültség, vízhőfok és motorterhelés grafikon látható, ha megvan a részletes útvonalnapló. A grafikonok a generált WebDAV HTML-ben is szerepelnek. Az összesítés a helyben megőrzött 200 út és 100 tankolás adataiból készül.
+
+
+## 0.21 — widget és Üzemanyag menüpont
+
+Kezdőképernyős, 2×1-re méretezhető Autó-widget, a Kapcsolat oldalon hozzáadási gombbal. A körív a becsült tankszintet jelzi, színe az AA hatótávszabálya: <100 km piros, <150 narancs, 150–250 semleges, >250 zöld, ismeretlen szürke. Megerősített parkolóhely és legfeljebb 10 perces, 200 m-nél pontosabb telefonhely alapján légvonalbeli távolság; koppintásra Google Maps gyalogos navigáció. Helyhiányt és a mérés korát jelzi. Rendszeres widgetfrissítés 30 perc (Android késleltetheti), mentett adatok frissülése legfeljebb percenként, tankolás/parkolás azonnal, kézi frissítés is van. Új helyfix csak meglévő háttér-helyengedéllyel, Android 11+-on, legfeljebb 8 s várakozással. Nincs folyamatos új helyszolgáltatás.
+
+Külön Üzemanyag alsó menüpont: becsült tankszint és hatótáv, Teletankoltam, tankolási napló. A Műszerfalról és az útnaplóból ezek átkerültek ide; a fogyasztásműszerek és statisztikák megmaradnak. Az újonnan feldolgozott blokkfotó mentéskor privát noBackupFilesDir/receipt-photos könyvtárba kerül JPEG-ként; az opcionális fájlnév a tankolási rekordhoz tartozik. Naplóból teljes képernyőn megnyitható. Nincs automatikus WebDAV/kép-backup. Korábbi fotókat az app törölte, ezért nem rekonstruálhatók. Megszakított bevitel nem ment tartós fotót; kézi ellenőrzés/teletank-megerősítés változatlan.
+
+
+## 0.22.0 — automatikus, egyoldalú tankkalibráció
+A felhasználó óvatosabb tankszintet kért. A nyers, kézi FuelSettings-korrekció utáni integrált fogyasztást megőrizzük, nem írjuk át a történeti utakat, napi fogyasztást vagy költséget. A tankra külön tanult szorzó kerül, és a hatótáv nevezőjét is ezzel korrigáljuk. Így az ismételt tankolás nem szorozza újra a már korrigált adatot.
+
+Tanulás csak két megerősített teletank között, hasGaps=false, legalább 10 l megfigyelt és 10 l tankolt mennyiségnél, 0,5–2,0 tényleges/nyers aránynál. Új faktor=max(korábbi faktor, tankolt/nyers fogyás), minimum 1.0; automatikus lefelé korrekció nincs. Első tankolás, hiányos szakasz, kis rátankolás vagy extrém eltérés nem tanít. A faktor és értékelhető mintaszám tartós, régi rekordok 1.0/0 értékkel töltődnek. Fogyasztási profil/kézi kalibráció módosítása nullázza a tanulást és a folyó tankot hiányosnak jelöli.
+
+Kijelzett maradék=max(0, 45 − nyers fogyás × faktor − tartalék). Tartalék: 2 l + korrigált fogyás 5%-a; adathiánynál 4,5 l + 5%. Ezek óvatos termékheurisztikák, nem autóban validált hibahatárok. A teletank utáni kijelzés ezért kb. 96%, nem 100%; az Üzemanyag oldal megmutatja a levonást, faktort és mintaszámot. Ismeretlen tank továbbra is ismeretlen. Telefon, AA és widget ugyanazt a TankEstimate/RangeEstimate modellt kapja. Nem megfigyelt autózás tetszőlegesen nagy lehet: a tartalék nem garantálja, hogy a valós szint mindig nagyobb. Új, valós teletank rögzítésére van szükség a tanuláshoz; történeti rekordokat nem tanítunk visszamenőleg.

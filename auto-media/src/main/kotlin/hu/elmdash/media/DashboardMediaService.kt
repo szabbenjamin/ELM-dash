@@ -47,6 +47,7 @@ class DashboardMediaService : MediaBrowserService() {
     private lateinit var network: RadioNetwork
     private var carOwned = false
     internal val wantsPlayback: Boolean get() = ::recovery.isInitialized && recovery.wanted
+    private var sourceJob: Job? = null
     private var destroyed = false
 
     override fun onCreate() {
@@ -96,10 +97,24 @@ class DashboardMediaService : MediaBrowserService() {
             scope.launch { if (!destroyed) recovery.networkChanged(available) }
         }
         recovery = RadioRecovery(scope, network.online, connect = {
-            // Replace the source to rejoin a live stream instead of replaying an old buffer.
-            player.setMediaItem(MediaItem.fromUri(radio.state.value.selected.url))
-            player.prepare()
-            player.play()
+            sourceJob?.cancel()
+            val station = radio.state.value.selected
+            player.stop()
+            sourceJob = scope.launch {
+                try {
+                    val url = if (station.id == "claude-fm") YouTubeLiveSource.resolve() else station.url
+                    ensureActive()
+                    if (!recovery.wanted || radio.state.value.selected.id != station.id) return@launch
+                    player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+                        .setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true).build()
+                    player.setMediaItem(MediaItem.Builder().setUri(url).apply {
+                        if (station.id == "claude-fm") setMimeType("application/x-mpegURL")
+                    }.build())
+                    player.prepare()
+                    player.play()
+                } catch (e: CancellationException) { throw e }
+                catch (_: Exception) { if (recovery.wanted) recovery.failure(true) }
+            }
         }, changed = { syncPlayback() })
         network.start()
         AutoRadio.service = this
@@ -146,6 +161,7 @@ class DashboardMediaService : MediaBrowserService() {
     }
 
     private fun pauseRadio(stop: Boolean = false, userInitiated: Boolean = true) {
+        sourceJob?.cancel()
         android.util.Log.i("ELMRadio", "pause stop=$stop userInitiated=$userInitiated")
         if (userInitiated) AutoRadio.manualPause()
         recovery.pause() // Cancel timers before player callbacks can arrive.

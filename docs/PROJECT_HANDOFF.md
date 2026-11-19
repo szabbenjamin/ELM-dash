@@ -334,3 +334,42 @@ Rövid automatikus újracsatlakozás nem hív azonnal gap()-et; a régi minták 
 
 ## 0.19.0 — ChatGPT-s blokkfeldolgozás
 A korábbi helyi OCR-only döntést a felhasználó felülírta. Dokumentált Sign in with ChatGPT OSS belépés és közvetlen képes Responses-kérés; külön API-kulcs/fizetős fallback nincs. Részletek: [RECEIPT_CHATGPT.md](RECEIPT_CHATGPT.md). Fotó kiválasztás után külön feldolgozásgomb, minden eredmény kézzel ellenőrizhető. A tényleges belépési és blokkpróba státuszát a VALIDATION tartalmazza.
+
+## 0.20.0 — időszakos statisztikák és útgrafikonok (2026-10-29)
+
+Napló: lenyitható napi/heti/havi diagramok, 12 időszak és lapozás. Megtett km, megfigyelt/becsült elfogyasztott liter, súlyozott l/100 km, tankolt liter és fizetett Ft külön sorozat. Helyi naptár, hétfői hétkezdés; az út az indulás napjához tartozik (éjfélen átnyúló út nincs kitalált aránnyal felosztva). Csak a megőrzött 200 út/100 tankolás; régi törölt rekord nem rekonstruálható. Hiányzó adat nem nulla, részleges adatok jelölve.
+
+Útrészlet és újonnan generált WebDAV HTML: négy offline SVG diagram (OBD-átlagsebesség, akkufeszültség, vízhőfok, terhelés), GPS-pontválasztó és térképjelölő. A meglévő JSONL másodperces OBD-mintáiból GPS-fixenként idővel súlyozott átlag, maximum 10 s integrálható szakasz. Hiányzó GPS/PID, külön fájl és hosszú időrés nem interpolálható. Korábbi GPS-es naplóból is előáll, nyers adat hiányában üres állapot. Meglévő távoli HTML-t nem ír felül automatikusan.
+
+## 0.20.1 — közvetlen grafikonvezérlés
+Az útközbeni csúszka eltávolítva: koppintás és vízszintes ujjhúzás a legközelebbi időpontú GPS-pontot választja. Közös függőleges jelölő, időbélyeg és értékfrissítés mind a négy grafikonon, térképjelölő szinkronban. Függőleges görgetés megmarad; billentyűzetes nyilak/Home/End és akadálymentes slider szerep is támogatott. Az időszakos statisztika vezérlése változatlan.
+
+
+## 0.21 — widget és Üzemanyag menüpont
+
+Kezdőképernyős, 2×1-re méretezhető Autó-widget, a Kapcsolat oldalon hozzáadási gombbal. A körív a becsült tankszintet jelzi, színe az AA hatótávszabálya: <100 km piros, <150 narancs, 150–250 semleges, >250 zöld, ismeretlen szürke. Megerősített parkolóhely és legfeljebb 10 perces, 200 m-nél pontosabb telefonhely alapján légvonalbeli távolság; koppintásra Google Maps gyalogos navigáció. Helyhiányt és a mérés korát jelzi. Rendszeres widgetfrissítés 30 perc (Android késleltetheti), mentett adatok frissülése legfeljebb percenként, tankolás/parkolás azonnal, kézi frissítés is van. Új helyfix csak meglévő háttér-helyengedéllyel, Android 11+-on, legfeljebb 8 s várakozással. Nincs folyamatos új helyszolgáltatás.
+
+Külön Üzemanyag alsó menüpont: becsült tankszint és hatótáv, Teletankoltam, tankolási napló. A Műszerfalról és az útnaplóból ezek átkerültek ide; a fogyasztásműszerek és statisztikák megmaradnak. Az újonnan feldolgozott blokkfotó mentéskor privát noBackupFilesDir/receipt-photos könyvtárba kerül JPEG-ként; az opcionális fájlnév a tankolási rekordhoz tartozik. Naplóból teljes képernyőn megnyitható. Nincs automatikus WebDAV/kép-backup. Korábbi fotókat az app törölte, ezért nem rekonstruálhatók. Megszakított bevitel nem ment tartós fotót; kézi ellenőrzés/teletank-megerősítés változatlan.
+
+
+## 0.22.0 — automatikus, egyoldalú tankkalibráció
+A felhasználó óvatosabb tankszintet kért. A nyers, kézi FuelSettings-korrekció utáni integrált fogyasztást megőrizzük, nem írjuk át a történeti utakat, napi fogyasztást vagy költséget. A tankra külön tanult szorzó kerül, és a hatótáv nevezőjét is ezzel korrigáljuk. Így az ismételt tankolás nem szorozza újra a már korrigált adatot.
+
+Tanulás csak két megerősített teletank között, hasGaps=false, legalább 10 l megfigyelt és 10 l tankolt mennyiségnél, 0,5–2,0 tényleges/nyers aránynál. Új faktor=max(korábbi faktor, tankolt/nyers fogyás), minimum 1.0; automatikus lefelé korrekció nincs. Első tankolás, hiányos szakasz, kis rátankolás vagy extrém eltérés nem tanít. A faktor és értékelhető mintaszám tartós, régi rekordok 1.0/0 értékkel töltődnek. Fogyasztási profil/kézi kalibráció módosítása nullázza a tanulást és a folyó tankot hiányosnak jelöli.
+
+Kijelzett maradék=max(0, 45 − nyers fogyás × faktor − tartalék). Tartalék: 2 l + korrigált fogyás 5%-a; adathiánynál 4,5 l + 5%. Ezek óvatos termékheurisztikák, nem autóban validált hibahatárok. A teletank utáni kijelzés ezért kb. 96%, nem 100%; az Üzemanyag oldal megmutatja a levonást, faktort és mintaszámot. Ismeretlen tank továbbra is ismeretlen. Telefon, AA és widget ugyanazt a TankEstimate/RangeEstimate modellt kapja. Nem megfigyelt autózás tetszőlegesen nagy lehet: a tartalék nem garantálja, hogy a valós szint mindig nagyobb. Új, valós teletank rögzítésére van szükség a tanuláshoz; történeti rekordokat nem tanítunk visszamenőleg.
+
+
+Widget üzemanyagkör: explicit OPEN_FUEL activity action az Üzemanyag fülre navigál; már futó appnál onNewIntent is kezelt, beállítási aloldalakat bezárja. Parkolóhely-koppintás továbbra is navigáció.
+
+
+## 0.23.0 — Tankoltam, részleges tankolás és automatikus blokkfeldolgozás
+Felhasználói kérés: Tankoltam gomb, alapértelmezetten üres „Lekattanásig tankoltam (tele tank)” jelölő. Liter/ár/fajta ellenőrzése és mentés továbbra is szükséges; részleges tankolás is menthető. Ismeretlen kezdőszint részleges tankolástól nem válik ismertté. Külön addedLiters tartós számláló, a nyers fogyasztást nem csökkentjük; következő teletank tanulási arányába az összes köztes részleges liter is beleszámít. Részleges rekord nem kalibrál; régi rekordok teletankként olvashatók. Statisztikában minden rekord saját liter/ár mezője számít, a ciklusösszeg nem adódik hozzá újra.
+
+ChatGPT módban képválasztás/fotózás automatikusan elküldi a fotót elemzésre (új, explicit felhasználói engedély); előtte a felület ezt jelzi. Nincs külön Feldolgozás gomb. Hiba után kézi Újrapróbálás, nincs automatikus ismételt keretfogyasztás. Helyi OCR továbbra is választható.
+
+
+## 0.24.0 — Claude FM és rádiósorrend
+Claude FM kísérleti YouTube-live állomás (tRsQsTMvPNg). Nincs fix/lejáró streamcím a katalógusban: a telefon indításkor nyilvános visitor kontextust és live player választ kér, majd HLS audio renditiont választ. Saját, szűk resolver, külső extractor könyvtár nélkül. Nincs felhasználói YouTube-belépés, cookie-import, fizetős/korlátozott tartalom feloldása vagy szerveres proxy. YouTube változás esetén javítás szükséges lehet; a hivatalos YouTube API-s háttérlejátszás szabályai ettől nem változnak. A meglévő hálózati újrapróbálás új címet kér. Szünet/állomásváltás megszakítja a függő feloldást, régi válasz nem indíthat másik állomást.
+
+Rádió: Sorrend szerkesztése, Feljebb/Lejjebb gombok; beépített és saját csatornák sorrendje tartósan állomásazonosítókkal mentve. Új katalóguselemek a mentett sorrend végére kerülnek, kiválasztott állomás és kedvencek megmaradnak. Ugyanazt a sorrendet használja az AA és az előző/következő vezérlés.

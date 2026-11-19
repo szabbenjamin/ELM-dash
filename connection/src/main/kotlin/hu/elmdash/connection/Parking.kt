@@ -14,14 +14,14 @@ import org.json.JSONObject
 data class ParkedCar(val latitude: Double, val longitude: Double, val accuracy: Float, val atMs: Long, val confirmed: Boolean) {
     fun location() = Location("parking").also { it.latitude = latitude; it.longitude = longitude; it.accuracy = accuracy }
 }
-class ParkingStore(context: Context) {
+class ParkingStore(private val context: Context) {
     private val prefs = context.getSharedPreferences("elm-parking", Context.MODE_PRIVATE)
     fun load(): ParkedCar? = runCatching {
         val j = JSONObject(prefs.getString("point", null) ?: return null)
         ParkedCar(j.getDouble("lat"), j.getDouble("lon"), j.getDouble("accuracy").toFloat(), j.getLong("at"), j.getBoolean("confirmed"))
     }.getOrNull()
-    fun save(p: ParkedCar) { prefs.edit().putString("point", JSONObject().put("lat",p.latitude).put("lon",p.longitude).put("accuracy",p.accuracy).put("at",p.atMs).put("confirmed",p.confirmed).toString()).apply() }
-    fun clear() { prefs.edit().remove("point").apply() }
+    fun save(p: ParkedCar) { prefs.edit().putString("point", JSONObject().put("lat",p.latitude).put("lon",p.longitude).put("accuracy",p.accuracy).put("at",p.atMs).put("confirmed",p.confirmed).toString()).apply(); CarWidget.changed(context,true) }
+    fun clear() { prefs.edit().remove("point").apply(); CarWidget.changed(context,true) }
 }
 /** Continuous fixes only while the OBD foreground service runs. Engine-off freezes the last fresh fix. */
 class ParkingTracker(context: Context, private val elapsed: () -> Long = SystemClock::elapsedRealtime, private val wall: () -> Long = System::currentTimeMillis) {

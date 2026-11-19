@@ -14,10 +14,19 @@ class RadioStoreTest {
     private val context get() = RuntimeEnvironment.getApplication()
     @Before fun clear() { context.getSharedPreferences("elm-radio", 0).edit().clear().commit() }
 
+    @Test fun orderSurvivesRestartWithoutChangingSelection() {
+        val store=RadioStore(context)
+        val id=store.state.value.stations[1].id
+        store.move(id,-1)
+        assertEquals(id,RadioStore(context).state.value.stations.first().id)
+        assertEquals("oxygen",store.state.value.selectedId)
+        store.move(id,-1)
+        assertEquals(id,store.state.value.stations.first().id)
+    }
     @Test fun `catalog includes requested exact Oxygen stream and popular Hungarian stations`() {
         val s = RadioStore(context).state.value
         assertEquals("https://oxygenmusic.hu:8443/oxygenmusic", s.selected.url)
-        assertEquals(21, s.stations.size)
+        assertEquals(22, s.stations.size)
         assertTrue(s.stations.any { it.id == "ezazanap" && it.url == "https://www.radioking.com/play/ez-az-a-nap-radio" })
         assertEquals(s.stations.size, s.stations.map { it.id }.distinct().size)
         assertTrue(s.stations.any { it.name == "Retro Rádió" })
@@ -47,7 +56,7 @@ class RadioStoreTest {
         store.select(id); store.status(false, true)
         assertThrows(IllegalArgumentException::class.java) { store.remove(id) }
         store.status(false, false); store.remove(id); store.remove("oxygen")
-        assertEquals(21, store.state.value.stations.size)
+        assertEquals(22, store.state.value.stations.size)
     }
 
     @Test fun `reject malformed credentials local files duplicate streams and oversized custom list`() {

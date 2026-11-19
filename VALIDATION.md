@@ -428,3 +428,38 @@ A GitHub workflow teljes Gradle parancsa helyben sikeres: elm/obd/trip/traffic �
 - A Responses adatfolyam lezáró eseményének output tömbje nem tartalmazta a korábban közölt szöveget. Az output_text.done/delta események összegyűjtése megoldotta a hibát; kizárólag response.completed siker után tölthetők ki a mezők. Csonka/failed válasz továbbra is elutasított. Regressziós tesztek sikeresek.
 - Felhasználó által kiválasztott valódi blokk: ChatGPT-fiókkal végponttól végpontig feldolgozva, üzemanyag/liter/kedvezmény utáni összeg kitöltve, más termék és külön kedvezménye a modell magyarázata szerint kizárva. A forrásfotóhoz viszonyított helyességet a felhasználónak kell jóváhagynia; a fejlesztő csak a kitöltött mezőket és az összesítőt ellenőrizte.
 - Telefonos ellenőrző képernyő megtekintve; teletank megerősítés és mentés nem történt, a felület jóváhagyásra nyitva maradt. Valódi blokk, felismert személyes adatok és telefonos screenshot nem került a repóba.
+
+## 0.20.0 — időszakos statisztikák és útgrafikonok (2026-10-29)
+
+Napló: lenyitható napi/heti/havi diagramok, 12 időszak és lapozás. Megtett km, megfigyelt/becsült elfogyasztott liter, súlyozott l/100 km, tankolt liter és fizetett Ft külön sorozat. Helyi naptár, hétfői hétkezdés; az út az indulás napjához tartozik (éjfélen átnyúló út nincs kitalált aránnyal felosztva). Csak a megőrzött 200 út/100 tankolás; régi törölt rekord nem rekonstruálható. Hiányzó adat nem nulla, részleges adatok jelölve.
+
+Útrészlet és újonnan generált WebDAV HTML: négy offline SVG diagram (OBD-átlagsebesség, akkufeszültség, vízhőfok, terhelés), GPS-pontválasztó és térképjelölő. A meglévő JSONL másodperces OBD-mintáiból GPS-fixenként idővel súlyozott átlag, maximum 10 s integrálható szakasz. Hiányzó GPS/PID, külön fájl és hosszú időrés nem interpolálható. Korábbi GPS-es naplóból is előáll, nyers adat hiányában üres állapot. Meglévő távoli HTML-t nem ír felül automatikusan.
+
+0.20.0 ellenőrzés: trip és connection tesztek sikeresek, beleértve helyi nap/hét/hónap csoportosítás, távolsággal súlyozott fogyasztás, ismeretlen tankolási összegek, aktív út deduplikálás, GPS-fixenkénti idővel súlyozott sebesség, hiányzó PID és hosszú mintakimaradás eseteit. MediaDebug lint/build és mind a négy változat build/izoláció sikeres. A végső csúszkás felület mediaDebug build/lint ismét sikeres.
+
+Samsungon 0.20.0 adatmegőrző telepítés sikeres; napi és havi statisztika választás, valós naplóadatok oszlopdiagramjai és meglévő GPS-es út négy SVG grafikonja vizuálisan ellenőrizve. Tankolást/utat nem hoztunk létre. Személyes képernyőkép nem került a repóba. Új WebDAV-feltöltés és élő autós mintavétel ezen a verzión nem volt tesztelve.
+
+## 0.20.1 — közvetlen grafikonvezérlés
+Az útközbeni csúszka eltávolítva: koppintás és vízszintes ujjhúzás a legközelebbi időpontú GPS-pontot választja. Közös függőleges jelölő, időbélyeg és értékfrissítés mind a négy grafikonon, térképjelölő szinkronban. Függőleges görgetés megmarad; billentyűzetes nyilak/Home/End és akadálymentes slider szerep is támogatott. Az időszakos statisztika vezérlése változatlan.
+
+0.20.1: mediaDebug build/lint sikeres, adatmegőrző telefonos telepítés kész. Meglévő út grafikonján vízszintes ujjhúzás után az időpont, a négy érték és a szinkron függőleges jelölő elmozdulása képernyőképen ellenőrizve; függőleges görgetés működik.
+
+
+## 0.21.1 — Üzemanyag és widget
+Trip/connection egységtesztek, mediaDebug lint/build és négy változat build/izoláció sikeres. A tankolási fotó opcionális hivatkozásának controller/store roundtrip tesztje sikeres; régi fotó nélküli rekordok megmaradnak. Adatmegőrző telepítés a Samsungra; az öt alsó menüpont és az Üzemanyag oldal meglévő tankolásokkal képernyőképen ellenőrizve. Új valódi tankolást nem mentettünk: a fotómentés teljes kamerás/felhős folyamata ezen verzión nem volt végponttól végpontig tesztelve. Widget kihelyezve, tankszint/hatótáv és távolság látható; a Samsung a már kihelyezett widgetet 3×1-en tartotta, az új minimum 2×1-re csökkentést enged, ennek kézi átméretezése még nincs igazolva. Navigációt nem indítottunk el. Személyes képek/adatok nem kerültek a repóba.
+
+
+## 0.22.0 — óvatos tankbecslés
+Trip és connection tesztek, mediaDebug lint és mind a négy változat build/izoláció sikeres. Új tesztek: alulbecslés tanulása, nincs ismételt felszorzás/lefelé módosítás, adathiány/kis tankolás/outlier kizárás, tartalék nem módosít nyers kalibrációs adatot, ismeretlen/üres tank kezelése; tartós faktor/mintaszám store roundtrip. A korábbi maradék/hatótáv tesztek elvárásait az explicit biztonsági levonásra módosítottuk. Samsungra adatmegőrző telepítés sikeres, Üzemanyag oldal megnyitva; valós új tankolást nem rögzítettünk. Autós teletank-ciklussal még nem validált, a 2/4,5 l és 5% tartalék nem garantált hibahatár.
+
+Widget üzemanyag-deeplink: mediaDebug build és adatmegőrző telefonos telepítés sikeres. OPEN_FUEL hideg indításkor és már futó, Napló fülön álló activity esetén is Üzemanyag/Teletankoltam felületet nyitott az UI dump szerint.
+
+
+## 0.23.0 — részleges tankolás
+Trip/connection tesztek, mediaDebug lint/build és mind a négy változat build/izoláció sikeres. Tesztelve: részleges liter hozzáadása fogyasztásnullázás nélkül, teletank-ciklus köztes literekkel helyes kalibrációja, ismeretlen kezdőszint megőrzése, új mezők tárolási roundtrip. Samsungra adatmegőrző telepítés, Tankoltam gomb és alapból üres lekattanásig checkbox képernyőképen ellenőrizve. Nem mentettünk kitalált tankolást; új fotó automatikus felhős feldolgozását élő blokkal ezen verzión még nem próbáltuk.
+
+
+## 0.24.0 — Claude FM és sorrend (2026-11-19)
+Nyilvános Claude FM live HLS: yt-dlp referencia és saját visitor/player resolver is 5 s AAC hangot hibamentesen dekódolt ffmpeggel. A weboldal egyszerű muxolt streamje nem volt elég, a beépített út külön audio renditiont kér. Samsungon mediaDebug adatmegőrző telepítés; Claude FM MediaSession PLAYING, hiba nélkül, majd szünet/újraindítás után a felület is „Szól az internetes rádió”. Emberi meghallgatás és AA-fejegységes próba nem történt. Próba végén szünet. Sorrendszerkesztő megnyitva, Claude FM feljebb helyezése UI dumpban igazolt, próbasorrend visszaállítva. Változatizoláció script sikeres (más variánsok korábbi APK-i). Személyes screenshot és lejáró stream URL nem kerül a repóba.
+
+0.24.0 végső ellenőrzés: mediaDebug build és lint sikeres; 44 auto-media egységteszt, 0 hiba. A két korábbi tankszint/hatótáv tesztet az előző verzióban bevezetett biztonsági levonás várható értékeire igazítottuk.

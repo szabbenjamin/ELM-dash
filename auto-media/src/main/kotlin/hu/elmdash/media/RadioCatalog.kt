@@ -4,6 +4,7 @@ package hu.elmdash.media
 internal object RadioCatalog {
     val stations = listOf(
         RadioStation("oxygen", "Oxygen Music", "https://oxygenmusic.hu:8443/oxygenmusic", true),
+        RadioStation("claude-fm", "Claude FM · kísérleti", YouTubeLiveSource.WATCH, true),
         RadioStation("retro", "Retro Rádió", "https://icast.connectmedia.hu/5001/live.mp3", true),
         RadioStation("radio1", "Rádió 1", "https://icast.connectmedia.hu/5201/live.mp3", true),
         RadioStation("best", "Best FM", "https://icast.connectmedia.hu/5101/live.mp3/", true),

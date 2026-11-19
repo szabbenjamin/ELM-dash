@@ -28,11 +28,25 @@ internal class RadioStore(context: Context) {
             RadioStation(j.getString("id"), j.getString("name"), validateUrl(j.getString("url")))
         }.getOrNull() }.take(20)
     }.getOrDefault(emptyList())
-    private val mutable = MutableStateFlow(RadioState(defaults + custom, prefs.getString("selected", "oxygen")!!,
+    private val mutable = MutableStateFlow(RadioState(ordered(defaults + custom), prefs.getString("selected", "oxygen")!!,
         favorites = prefs.getStringSet("favorites", setOf("oxygen"))!!.toSet(),
         autoPlayOnAa = prefs.getBoolean("autoPlayOnAa", true)))
     val state = mutable.asStateFlow()
 
+    private fun ordered(stations: List<RadioStation>): List<RadioStation> {
+        val ids=runCatching { val a=JSONArray(prefs.getString("order","[]")); (0 until a.length()).map { a.getString(it) } }.getOrDefault(emptyList())
+        val ranks=ids.withIndex().associate { it.value to it.index }
+        return stations.sortedBy { ranks[it.id] ?: Int.MAX_VALUE }
+    }
+    fun move(id: String, delta: Int) {
+        val stations=mutable.value.stations.toMutableList()
+        val from=stations.indexOfFirst { it.id==id }
+        val to=from+delta
+        if(from<0 || to !in stations.indices) return
+        val station=stations.removeAt(from); stations.add(to,station)
+        mutable.value=mutable.value.copy(stations=stations)
+        persist()
+    }
     var pausedForAa: Boolean
         get() = prefs.getBoolean("pausedForAa", false)
         set(value) { prefs.edit().putBoolean("pausedForAa", value).apply() }
@@ -75,7 +89,7 @@ internal class RadioStore(context: Context) {
         mutable.value.stations.filter { !it.builtIn }.forEach {
             array.put(JSONObject().put("id", it.id).put("name", it.name).put("url", it.url))
         }
-        prefs.edit().putString("stations", array.toString()).putString("selected", mutable.value.selectedId).putStringSet("favorites", mutable.value.favorites).apply()
+        prefs.edit().putString("order", JSONArray(mutable.value.stations.map { it.id }).toString()).putString("stations", array.toString()).putString("selected", mutable.value.selectedId).putStringSet("favorites", mutable.value.favorites).apply()
     }
     companion object {
         fun matches(name: String, query: String): Boolean {

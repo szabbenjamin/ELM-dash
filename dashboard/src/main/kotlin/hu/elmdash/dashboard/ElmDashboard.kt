@@ -42,7 +42,7 @@ private val Amber = Color(0xFFFFCD80)
 private fun number(value: Double?, digits: Int = 1): String = value?.let { String.format(Locale.forLanguageTag("hu-HU"), "%.${digits}f", it) } ?: "—"
 
 @Composable
-fun ElmDashboard(controller: DashboardController, autoSurface: String, radioContent: (@Composable () -> Unit)? = null, parkingPreview: Boolean = false) {
+fun ElmDashboard(controller: DashboardController, autoSurface: String, radioContent: (@Composable () -> Unit)? = null, parkingPreview: Boolean = false, openFuelRequest: Int = 0) {
     val state by controller.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -50,6 +50,15 @@ fun ElmDashboard(controller: DashboardController, autoSurface: String, radioCont
     var trafficSettingsOpen by rememberSaveable { mutableStateOf(false) }
     var routeSettingsOpen by rememberSaveable { mutableStateOf(false) }
     var fuelSettingsOpen by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(openFuelRequest) {
+        if (openFuelRequest > 0) {
+            tab = 1
+            settingsOpen = false
+            trafficSettingsOpen = false
+            routeSettingsOpen = false
+            fuelSettingsOpen = false
+        }
+    }
     BackHandler(settingsOpen) { if (trafficSettingsOpen) trafficSettingsOpen = false else if (routeSettingsOpen) routeSettingsOpen = false else if (fuelSettingsOpen) fuelSettingsOpen = false else settingsOpen = false }
     val stop = {
         AutoObd.pause(context)
@@ -61,11 +70,11 @@ fun ElmDashboard(controller: DashboardController, autoSurface: String, radioCont
         surface = Panel, onSurface = Color(0xFFF3F6F8), onSurfaceVariant = Muted, secondary = Blue)) {
         Scaffold(containerColor = Ink, bottomBar = {
             NavigationBar(containerColor = Ink, tonalElevation = 0.dp) {
-                (listOf("Műszerfal", "Napló", "Szerviz") + if (radioContent != null) listOf("Rádió") else emptyList()).forEachIndexed { i, title ->
+                (listOf("Műszerfal", "Üzemanyag", "Napló", "Szerviz") + if (radioContent != null) listOf("Rádió") else emptyList()).forEachIndexed { i, title ->
                     NavigationBarItem(selected = !settingsOpen && tab == i, onClick = { tab = i; settingsOpen = false; fuelSettingsOpen = false; routeSettingsOpen = false; trafficSettingsOpen = false },
                         colors = NavigationBarItemDefaults.colors(selectedIconColor = Lime, selectedTextColor = Lime,
                             indicatorColor = Lime.copy(alpha = 0.15f), unselectedIconColor = Muted, unselectedTextColor = Muted),
-                        icon = { Text(listOf("◫", "▤", "⚒", "♫")[i], fontSize = 23.sp) }, label = { Text(title) })
+                        icon = { Text(listOf("◫", "◔", "▤", "⚒", "♫")[i], fontSize = 23.sp) }, label = { Text(title) })
                 }
             }
         }) { insets ->
@@ -73,7 +82,7 @@ fun ElmDashboard(controller: DashboardController, autoSurface: String, radioCont
                 Row(Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 18.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("ELM / DASH", fontWeight = FontWeight.Black, fontSize = 23.sp, letterSpacing = 2.sp)
-                        Text(when (autoSurface) { "media" -> "ANDROID AUTO MÉDIA  ·  0.19.0"; "unsupported" -> "ANDROID AUTO LAB  ·  0.19.0"; else -> "DIRECT BLUETOOTH OBD  ·  0.19.0" }, color = Muted, fontSize = 10.sp, letterSpacing = 1.5.sp)
+                        Text(when (autoSurface) { "media" -> "ANDROID AUTO MÉDIA  ·  0.24.0"; "unsupported" -> "ANDROID AUTO LAB  ·  0.24.0"; else -> "DIRECT BLUETOOTH OBD  ·  0.24.0" }, color = Muted, fontSize = 10.sp, letterSpacing = 1.5.sp)
                     }
                     if (settingsOpen) IconButton(onClick = { if (trafficSettingsOpen) trafficSettingsOpen = false else if (routeSettingsOpen) routeSettingsOpen = false else if (fuelSettingsOpen) fuelSettingsOpen = false else settingsOpen = false },
                         modifier = Modifier.semantics { contentDescription = "Vissza" }) { Text("←", fontSize = 26.sp) }
@@ -81,7 +90,7 @@ fun ElmDashboard(controller: DashboardController, autoSurface: String, radioCont
                         modifier = Modifier.semantics { contentDescription = "Kapcsolat és beállítások" }) { Text("⚙", fontSize = 28.sp) }
                     if (state.active) TextButton(onClick = stop) { Text("Leállítás") }
                 }
-                if (state.carUnavailable && !settingsOpen && tab == 3) {
+                if (state.carUnavailable && !settingsOpen && tab == 4) {
                     Text("Nincs kapcsolat az autóval", color = Amber, fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(bottom = 12.dp))
                 }
@@ -96,10 +105,11 @@ fun ElmDashboard(controller: DashboardController, autoSurface: String, radioCont
                         ConnectionScreen(controller, state, autoSurface, onStarted = { settingsOpen = false; tab = 0 })
                     }
                 } else when (tab) {
-                    0 -> TelemetryScreen(state, parkingPreview = parkingPreview, onJournal = { tab = 1 }, onConnect = { settingsOpen = true; fuelSettingsOpen = false; routeSettingsOpen = false })
-                    1 -> JournalScreen(controller, state)
-                    2 -> MaintenanceScreen(state.journal.journeys)
-                    3 -> radioContent?.invoke()
+                    0 -> TelemetryScreen(state, parkingPreview = parkingPreview, onConnect = { settingsOpen = true; fuelSettingsOpen = false; routeSettingsOpen = false })
+                    1 -> FuelScreen(controller, state)
+                    2 -> JournalScreen(controller, state)
+                    3 -> MaintenanceScreen(state.journal.journeys)
+                    4 -> radioContent?.invoke()
                 }
             }
         }
@@ -124,14 +134,13 @@ private fun Status(state: DashboardState) {
 }
 
 @Composable
-private fun TelemetryScreen(state: DashboardState, parkingPreview: Boolean, onJournal: () -> Unit, onConnect: () -> Unit) {
+private fun TelemetryScreen(state: DashboardState, parkingPreview: Boolean, onConnect: () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val columns = if (maxWidth >= 800.dp) 4 else if (maxWidth >= 600.dp) 3 else 2
         LazyVerticalGrid(columns = GridCells.Fixed(columns), verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
             item(span = { GridItemSpan(maxLineSpan) }) { ParkingCard(parkingPreview) }
             item(span = { GridItemSpan(maxLineSpan) }) { Status(state) }
-            item(span = { GridItemSpan(maxLineSpan) }) { TankCard(state.journal.tank, state.range, onJournal) }
             if (!state.active) item(span = { GridItemSpan(maxLineSpan) }) {
                 Button(onClick = onConnect, modifier = Modifier.fillMaxWidth()) { Text("Csatlakozás") }
             }
@@ -219,6 +228,11 @@ private fun ConnectionScreen(controller: DashboardController, state: DashboardSt
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Kapcsolat", fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
+        OutlinedButton(onClick = {
+            val manager=android.appwidget.AppWidgetManager.getInstance(context)
+            if(manager.isRequestPinAppWidgetSupported) manager.requestPinAppWidget(android.content.ComponentName(context,CarWidget::class.java),null,null)
+            else android.widget.Toast.makeText(context,"Kezdőképernyő → Widgetek → ELM Dash · Autó",android.widget.Toast.LENGTH_LONG).show()
+        }) { Text("Autó-widget hozzáadása") }
         Status(state)
         Text("1. Párosítás a telefonon", fontWeight = FontWeight.SemiBold)
         Text("Bluetooth Classic / SPP ELM327 adapter szükséges. Párosítsd az Android beállításaiban, majd válaszd ki alább. A Torque kapcsolatát előbb állítsd le.", color = Muted, fontSize = 14.sp)

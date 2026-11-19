@@ -12,10 +12,18 @@ data class TankEstimate(
     val fullAtMs: Long? = null,
     val consumedLiters: Double = 0.0,
     val hasGaps: Boolean = false,
-    val containsEstimate: Boolean = false
+    val containsEstimate: Boolean = false,
+    val learnedFactor: Double = 1.0,
+    val learningSamples: Int = 0,
+    val addedLiters: Double = 0.0
 ) {
     init { require(capacityLiters.isFinite() && capacityLiters > 0); require(consumedLiters.isFinite() && consumedLiters >= 0) }
-    val remainingLiters: Double? get() = fullAtMs?.let { (capacityLiters - consumedLiters).coerceIn(0.0, capacityLiters) }
+    // Raw consumption remains unchanged for calibration; reserve affects display only.
+    val reserveLiters: Double get() = if (fullAtMs == null) 0.0 else
+        (if (hasGaps) 4.5 else 2.0) + consumedLiters * learnedFactor * 0.05
+    val remainingLiters: Double? get() = fullAtMs?.let {
+        (capacityLiters + addedLiters - consumedLiters * learnedFactor - reserveLiters).coerceIn(0.0, capacityLiters)
+    }
     val percent: Double? get() = remainingLiters?.let { it * 100 / capacityLiters }
 }
 
@@ -50,14 +58,15 @@ data class JourneyRecord(
 data class FullRefill(
     val id: String, val atMs: Long, val pumpedLiters: Double? = null,
     val previousConsumedLiters: Double? = null, val previousHasGaps: Boolean = false,
-    val totalPaidHuf: Double? = null, val fuelName: String? = null
+    val totalPaidHuf: Double? = null, val fuelName: String? = null, val receiptPhoto: String? = null,
+    val isFull: Boolean = true, val cyclePumpedLiters: Double? = null
 ) {
     /** Positive error means the app underestimated consumption. Never auto-calibrate a gap. */
-    val differenceLiters: Double? get() = pumpedLiters?.let { actual -> previousConsumedLiters?.let { actual - it } }
+    val differenceLiters: Double? get() = (cyclePumpedLiters ?: pumpedLiters)?.takeIf { isFull }?.let { actual -> previousConsumedLiters?.let { actual - it } }
     val differencePercent: Double? get() = differenceLiters?.let { difference ->
         previousConsumedLiters?.takeIf { it > 0 }?.let { difference * 100 / it }
     }
-    val suggestedMultiplier: Double? get() = if (previousHasGaps) null else pumpedLiters?.let { actual ->
+    val suggestedMultiplier: Double? get() = if (previousHasGaps || !isFull) null else (cyclePumpedLiters ?: pumpedLiters)?.let { actual ->
         previousConsumedLiters?.takeIf { it > 0 }?.let { actual / it }
     }
     val hufPerLiter: Double? get() = totalPaidHuf?.let { total -> pumpedLiters?.takeIf { it > 0 }?.let { total / it } }
@@ -100,12 +109,37 @@ class JourneyLog(initial: JourneyLogState = JourneyLogState(), private val id: (
         if (active.id == journeyId && active.petrolPrice == null) state = state.copy(active = active.copy(petrolPrice = price))
     }
 
-    fun fullTank(atMs: Long, pumpedLiters: Double? = null, totalPaidHuf: Double? = null, fuelName: String? = null) {
+    fun resetTankLearning() {
+        state = state.copy(tank = state.tank.copy(learnedFactor = 1.0, learningSamples = 0,
+            hasGaps = state.tank.fullAtMs != null || state.tank.hasGaps))
+    }
+
+    fun partialTank(atMs: Long, liters: Double, paid: Double?, name: String?, photo: String?) {
+        require(liters.isFinite() && liters > 0 && liters <= state.tank.capacityLiters)
+        require(paid == null || (paid.isFinite() && paid > 0 && paid / liters in 200.0..2000.0))
+        val old = state.tank
+        val refill = FullRefill(id(), atMs, liters, totalPaidHuf=paid, fuelName=name,
+            receiptPhoto=photo, isFull=false)
+        state = state.copy(tank=old.copy(addedLiters=old.addedLiters+liters),
+            refills=(listOf(refill)+state.refills).take(100))
+        previousTank = null
+    }
+
+    fun fullTank(atMs: Long, pumpedLiters: Double? = null, totalPaidHuf: Double? = null, fuelName: String? = null, receiptPhoto: String? = null) {
         require(pumpedLiters == null || (pumpedLiters.isFinite() && pumpedLiters > 0 && pumpedLiters <= state.tank.capacityLiters))
         require(totalPaidHuf == null || (totalPaidHuf.isFinite() && totalPaidHuf > 0 && pumpedLiters != null && totalPaidHuf / pumpedLiters in 200.0..2000.0))
         val old = state.tank
-        val refill = FullRefill(id(), atMs, pumpedLiters, old.fullAtMs?.let { old.consumedLiters }, old.hasGaps, totalPaidHuf, fuelName?.trim()?.take(120)?.takeIf { it.isNotBlank() })
-        state = state.copy(tank = TankEstimate(old.capacityLiters, atMs), refills = (listOf(refill) + state.refills).take(100))
+        val refill = FullRefill(id(), atMs, pumpedLiters, old.fullAtMs?.let { old.consumedLiters }, old.hasGaps, totalPaidHuf, fuelName?.trim()?.take(120)?.takeIf { it.isNotBlank() }, receiptPhoto, cyclePumpedLiters=pumpedLiters?.let { it + old.addedLiters })
+        val ratio = refill.suggestedMultiplier
+        // Small top-ups and extreme discrepancies are not reliable calibration evidence.
+        val eligible = old.fullAtMs != null && !old.hasGaps &&
+            old.consumedLiters >= 10 && pumpedLiters != null && pumpedLiters >= 10 &&
+            ratio != null && ratio.isFinite() && ratio in 0.5..2.0
+        // One-sided learning: never reduce the safety correction from a single optimistic refill.
+        val factor = if (eligible) maxOf(old.learnedFactor, ratio!!) else old.learnedFactor
+        state = state.copy(tank = TankEstimate(old.capacityLiters, atMs,
+            learnedFactor = factor, learningSamples = old.learningSamples + if (eligible) 1 else 0),
+            refills = (listOf(refill) + state.refills).take(100))
         previousTank = null // Do not debit the part of an interval before the new full-tank anchor.
     }
 

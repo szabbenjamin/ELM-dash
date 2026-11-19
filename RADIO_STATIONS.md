@@ -47,3 +47,9 @@ A Szent István Rádió megvizsgált HTTPS-lejátszólistájának tanúsítvány
 ## 2026-10-21: Ez az a nap! Rádió
 
 Hivatalos forrás: https://radio.ezazanap.hu/ (Közvetlen stream linkek). MP3 128 kbit/s: https://www.radioking.com/play/ez-az-a-nap-radio . HTTPS letöltési próba HTTP 200 és audio/mpeg választ, hangbájtokat adott; hallgatási autós teszt nem történt.
+
+
+## 0.24.0 — Claude FM és rádiósorrend
+Claude FM kísérleti YouTube-live állomás (tRsQsTMvPNg). Nincs fix/lejáró streamcím a katalógusban: a telefon indításkor nyilvános visitor kontextust és live player választ kér, majd HLS audio renditiont választ. Saját, szűk resolver, külső extractor könyvtár nélkül. Nincs felhasználói YouTube-belépés, cookie-import, fizetős/korlátozott tartalom feloldása vagy szerveres proxy. YouTube változás esetén javítás szükséges lehet; a hivatalos YouTube API-s háttérlejátszás szabályai ettől nem változnak. A meglévő hálózati újrapróbálás új címet kér. Szünet/állomásváltás megszakítja a függő feloldást, régi válasz nem indíthat másik állomást.
+
+Rádió: Sorrend szerkesztése, Feljebb/Lejjebb gombok; beépített és saját csatornák sorrendje tartósan állomásazonosítókkal mentve. Új katalóguselemek a mentett sorrend végére kerülnek, kiválasztott állomás és kedvencek megmaradnak. Ugyanazt a sorrendet használja az AA és az előző/következő vezérlés.

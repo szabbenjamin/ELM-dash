@@ -22,9 +22,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-/** Bundled on-device OCR. The photo and recognized text are never persisted or sent to a backend. */
+/** Bundled on-device OCR; the caller can retain the photo when saving a refill. */
 @Composable
-internal fun LocalReceiptCapture(onSuggestion: (String, String, String) -> Unit, onBusy: (Boolean) -> Unit) {
+internal fun LocalReceiptCapture(onSuggestion: (String, String, String) -> Unit, onBusy: (Boolean) -> Unit, onPhoto: (ByteArray?) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val recognizer = remember { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
@@ -47,7 +47,7 @@ internal fun LocalReceiptCapture(onSuggestion: (String, String, String) -> Unit,
     fun recognize(uri: Uri) {
         if (busy) return
         busy=true; latestBusy(true); message="Szövegfelismerés a telefonon…"; raw=""
-        latestSuggestion("", "", "")
+        latestSuggestion("", "", ""); onPhoto(null)
         scope.launch {
             val image = withContext(Dispatchers.IO) {
                 runCatching {
@@ -57,6 +57,8 @@ internal fun LocalReceiptCapture(onSuggestion: (String, String, String) -> Unit,
                             decoder.setTargetSize((info.size.width*scale).toInt().coerceAtLeast(1),(info.size.height*scale).toInt().coerceAtLeast(1))
                             decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
                         }
+                        val bytes = java.io.ByteArrayOutputStream().use { output -> bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 88, output); output.toByteArray() }
+                        withContext(Dispatchers.Main) { onPhoto(bytes) }
                         InputImage.fromBitmap(bitmap,0)
                     } else InputImage.fromFilePath(context,uri)
                 }.getOrNull()

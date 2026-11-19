@@ -44,7 +44,7 @@ class MediaDashboardTest {
 
     @Test fun `range appears in tank page but station remains in subtitle`() {
         val frame = MediaDashboard.frame(live().copy(journal = JourneyLogState(tank = TankEstimate(fullAtMs = 1, consumedLiters = 10.0))))
-        assertTrue(frame.subtitles[3].contains("500 km"))
+        assertTrue(frame.subtitles[3].contains("460 km"))
         assertEquals("Oxygen Music", MediaDashboard.subtitle(frame, MediaPage.ENGINE, RadioState(RadioCatalog.stations, "oxygen"), 16_000))
     }
 
@@ -244,7 +244,7 @@ class MediaDashboardTest {
         assertTrue(initial.subtitles[MediaPage.TANK.ordinal].contains("teletankolást"))
         val tank = TankEstimate(fullAtMs = 1, consumedLiters = 9.0, hasGaps = true)
         val f = MediaDashboard.frame(live().copy(journal = JourneyLogState(tank = tank)))
-        assertTrue(f.subtitles[MediaPage.TANK.ordinal].contains("80 %"))
+        assertTrue(f.subtitles[MediaPage.TANK.ordinal].contains("69 %"))
         assertTrue(f.subtitles[MediaPage.TANK.ordinal].contains("bizonytalan"))
         assertEquals(initial.title, f.title)
     }

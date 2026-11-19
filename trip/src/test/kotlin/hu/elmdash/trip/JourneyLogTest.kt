@@ -65,8 +65,8 @@ class JourneyLogTest {
         assertNull(log.state.tank.percent)
         log.fullTank(epoch)
         for (t in 0L..60_000L step 250L) update(log, t)
-        assertEquals(44.9, log.state.tank.remainingLiters!!, 1e-8)
-        assertEquals(99.77777778, log.state.tank.percent!!, 1e-7)
+        assertEquals(42.895, log.state.tank.remainingLiters!!, 1e-8)
+        assertEquals(42.895 / 45 * 100, log.state.tank.percent!!, 1e-7)
         assertTrue(log.state.tank.containsEstimate)
         val before = log.state.tank.consumedLiters
         update(log, 60_000)
@@ -78,7 +78,7 @@ class JourneyLogTest {
         log.finish(JourneyEnd.STOPPED, epoch + 60_000)
         val record = log.state.journeys.single()
         log.fullTank(epoch + 70_000, 23.4)
-        assertEquals(100.0, log.state.tank.percent!!, 0.0)
+        assertEquals(43.0 / 45 * 100, log.state.tank.percent!!, 0.0)
         assertEquals(record, log.state.journeys.single())
         assertEquals(23.4, log.state.refills.first().pumpedLiters!!, 0.0)
         assertEquals(0.1, log.state.refills.first().previousConsumedLiters!!, 1e-8)
@@ -124,7 +124,7 @@ class JourneyLogTest {
         val log = JourneyLog(); log.fullTank(epoch)
         update(log, 0); update(log, 1000, rate = null)
         assertTrue(log.state.tank.hasGaps)
-        assertEquals(45.0, log.state.tank.remainingLiters!!, 0.0)
+        assertEquals(40.5, log.state.tank.remainingLiters!!, 0.0)
         assertNull(log.state.active!!.summary.averageL100)
     }
     @Test fun `runtime restart splits trips but wraparound does not`() {

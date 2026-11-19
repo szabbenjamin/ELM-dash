@@ -11,10 +11,12 @@ import java.time.Instant
 object RouteReport {
     fun read(files: List<File>): JSONObject {
         val segments = JSONArray()
+        val charts = RouteChartData()
         var header = JSONObject()
         var end = JSONObject()
         var damaged = false
         files.sortedBy { it.name }.forEach { file ->
+            charts.breakSegment()
             var segment = JSONArray()
             var lastFix: String? = null
             var lastTime: Long? = null
@@ -26,6 +28,7 @@ object RouteReport {
                         "header" -> if (header.length() == 0) header = row
                         "end" -> end = row
                         "sample" -> {
+                            charts.add(row)
                             val gps = row.optJSONObject("gps")
                             if (gps != null) {
                                 val lat = gps.optDouble("latitude", Double.NaN)
@@ -40,7 +43,7 @@ object RouteReport {
                             }
                         }
                     }
-                } catch (_: Exception) { damaged = true; flush(); lastTime = null; lastFix = null }
+                } catch (_: Exception) { damaged = true; charts.breakSegment(); flush(); lastTime = null; lastFix = null }
             } }
             flush()
         }
@@ -51,7 +54,7 @@ object RouteReport {
         summary.put("startedUtc", header.optString("startedUtc", ""))
         summary.put("endedUtc", end.optString("utc", ""))
         summary.put("partial", damaged || end.optBoolean("partial", true))
-        return JSONObject().put("segments", segments).put("summary", summary)
+        return JSONObject().put("segments", segments).put("summary", summary).put("chartPoints", charts.json())
     }
     fun journey(context: Context, record: JourneyRecord): String {
         val files = RouteRecorder.directory(context).listFiles().orEmpty().filter {

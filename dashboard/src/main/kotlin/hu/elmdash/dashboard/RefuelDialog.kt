@@ -15,9 +15,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @Composable
-internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Double?) -> Unit) {
+internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Double?, String?, Boolean) -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
+    var photo by remember { mutableStateOf<ByteArray?>(null) }
+    var saving by remember { mutableStateOf(false) }
+    var saveError by remember { mutableStateOf<String?>(null) }
     var name by rememberSaveable { mutableStateOf("") }
     var litersText by rememberSaveable { mutableStateOf("") }
     var paidText by rememberSaveable { mutableStateOf("") }
@@ -38,7 +44,7 @@ internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Doub
                 }
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(16.dp)) {
                     if (!review) {
-                        ReceiptCapture(onSuggestion={ fuel, l, h -> name=fuel; litersText=l; paidText=h; onlyFull=false; full=false },onBusy={busy=it})
+                        ReceiptCapture(onSuggestion={ fuel, l, h -> name=fuel; litersText=l; paidText=h; onlyFull=false; full=false },onBusy={busy=it}, onPhoto={photo=it})
                         if (!onlyFull) {
                             OutlinedTextField(name,{name=it.take(120)},label={Text("Milyen benzin?")},placeholder={Text("Például: 95 E10")},modifier=Modifier.fillMaxWidth(),singleLine=true)
                             OutlinedTextField(litersText,{litersText=it},label={Text("Hány litert tankoltál?")},suffix={Text("liter")},textStyle=LocalTextStyle.current.copy(fontSize=28.sp,fontWeight=FontWeight.Bold),modifier=Modifier.fillMaxWidth(),singleLine=true,keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.Decimal))
@@ -58,14 +64,32 @@ internal fun RefuelDialog(onDismiss: () -> Unit, onSave: (String?, Double?, Doub
                                 }
                             }
                         }
-                        Row { Checkbox(full,{full=it}); Text("Igen, tele tankoltam az autót.",Modifier.padding(top=12.dp)) }
-                        Text("Az első automatikus pisztolyleoldásig töltés elegendő; nem kell tovább tölteni.",style=MaterialTheme.typography.bodySmall)
+
+
                         if(onlyFull) Text("Fogyasztási eltérést és új literárat így nem számolunk.")
-                        TextButton(onClick={review=false;full=false}) { Text("Adatok javítása") }
+                        TextButton(onClick={review=false}) { Text("Adatok javítása") }
                     }
+                    Row { Checkbox(full,{full=it}); Text("Lekattanásig tankoltam (tele tank).",Modifier.padding(top=12.dp)) }
+                    Text(if(full) "A tank újra tele; a megfelelően megfigyelt ciklusból tanulunk." else "Részleges tankolás: a betöltött litert hozzáadjuk a becsléshez. Nem jelöljük tele a tankot.",style=MaterialTheme.typography.bodySmall)
                 }
-                Button(onClick={if(review) onSave(if(onlyFull)null else name,if(onlyFull)null else liters,if(onlyFull)null else paid) else review=true},
-                    enabled=if(review) full else !busy && (onlyFull || valid),modifier=Modifier.fillMaxWidth().padding(top=12.dp).height(56.dp)) {
+                saveError?.let { Text(it, color=MaterialTheme.colorScheme.error) }
+                if (photo != null) Text("A blokkfotót a tankolással együtt ezen a telefonon mentjük.", style=MaterialTheme.typography.bodySmall)
+                Button(onClick={if(review) {
+                    saving=true
+                    scope.launch {
+                        try {
+                            val file = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                photo?.let { bytes ->
+                                    val dir=java.io.File(context.noBackupFilesDir,"receipt-photos").apply { mkdirs() }
+                                    val target=java.io.File(dir,java.util.UUID.randomUUID().toString()+".jpg")
+                                    try { target.writeBytes(bytes); target.name } catch(e:Exception) { target.delete(); throw e }
+                                }
+                            }
+                            onSave(if(onlyFull)null else name,if(onlyFull)null else liters,if(onlyFull)null else paid,file,full)
+                        } catch(e:Exception) { saveError="A mentés nem sikerült. Próbáld újra." } finally { saving=false }
+                    }
+                } else review=true},
+                    enabled=!saving && !busy && (if(onlyFull) full else valid),modifier=Modifier.fillMaxWidth().padding(top=12.dp).height(56.dp)) {
                     Text(if(review) "Helyesek az adatok · Mentés" else "Ellenőrzés")
                 }
             }

@@ -21,16 +21,16 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 
 @Composable
-internal fun ReceiptCapture(onSuggestion:(String,String,String)->Unit,onBusy:(Boolean)->Unit) {
+internal fun ReceiptCapture(onSuggestion:(String,String,String)->Unit,onBusy:(Boolean)->Unit,onPhoto:(ByteArray?)->Unit) {
     var local by rememberSaveable { mutableStateOf(false) }
     Column(verticalArrangement=Arrangement.spacedBy(8.dp)) {
-        if(local)LocalReceiptCapture(onSuggestion,onBusy) else AiReceiptCapture(onSuggestion,onBusy)
+        if(local)LocalReceiptCapture(onSuggestion,onBusy,onPhoto) else AiReceiptCapture(onSuggestion,onBusy,onPhoto)
         TextButton(onClick={ local=!local;onBusy(false) }) { Text(if(local) "ChatGPT-s blokkfeldolgozás" else "Helyi felismerés használata") }
     }
 }
 
 @Composable
-private fun AiReceiptCapture(onSuggestion:(String,String,String)->Unit,onBusy:(Boolean)->Unit) {
+private fun AiReceiptCapture(onSuggestion:(String,String,String)->Unit,onBusy:(Boolean)->Unit,onPhoto:(ByteArray?)->Unit) {
     val context=LocalContext.current
     val ai=remember { ChatGptReceipts(context) }
     val scope=rememberCoroutineScope()
@@ -79,12 +79,34 @@ private fun AiReceiptCapture(onSuggestion:(String,String,String)->Unit,onBusy:(B
             } catch(e:CancellationException){throw e} catch(e:Exception){failure(e)} finally { status(false) }
         }
     }
-    fun choose(uri:Uri?) { if(uri!=null) { pending=uri;message="Kép kiválasztva. A feldolgozás gomb elküldi az OpenAI-nak.";latestSuggestion("","","") } }
+    fun process(uri: Uri) {
+                status(true);message="Blokk feldolgozása ChatGPT-vel…";latestSuggestion("","","")
+                scope.launch {
+                    try {
+                        val bytes=withContext(Dispatchers.IO) {
+                            if(Build.VERSION.SDK_INT<28)throw ReceiptAiException("Ehhez a képfeldolgozáshoz Android 9 vagy újabb kell. Használd a helyi felismerést.")
+                            val bitmap=ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver,uri)) {decoder,info,_->
+                                val scale=minOf(1.0,2400.0/maxOf(info.size.width,info.size.height))
+                                decoder.setTargetSize((info.size.width*scale).toInt().coerceAtLeast(1),(info.size.height*scale).toInt().coerceAtLeast(1))
+                                decoder.allocator=ImageDecoder.ALLOCATOR_SOFTWARE
+                            }
+                            try { ByteArrayOutputStream().use { output->check(bitmap.compress(Bitmap.CompressFormat.JPEG,88,output));output.toByteArray() } } finally {bitmap.recycle()}
+                        }
+                        onPhoto(bytes)
+                        val result=ai.analyze(bytes,model)
+                        fun number(n:Double?)=n?.let {String.format(java.util.Locale.US,"%.3f",it)}.orEmpty()
+                        latestSuggestion(result.fuel.orEmpty(),number(result.liters),number(result.paidHuf))
+                        message="Ellenőrizd az üzemanyagot, litert és összeget.\n"+result.explanation
+                        pending=null;photo.delete()
+                    } catch(e:CancellationException){throw e} catch(e:Exception){failure(e)} finally {status(false)}
+                }
+    }
+    fun choose(uri:Uri?) { if(uri!=null) { onPhoto(null);pending=uri;message="Kép kiválasztva.";latestSuggestion("","","");process(uri) } }
     val picker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { choose(it) }
     val camera=rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok->cameraPending=false;if(ok)choose(photoUri)else photo.delete() }
     Column(verticalArrangement=Arrangement.spacedBy(8.dp)) {
         Text("Blokk beolvasása · ChatGPT",style=MaterialTheme.typography.titleMedium)
-        Text("A kiválasztott fotó az OpenAI-hoz kerül, a ChatGPT-csomagod keretét használja. Külön fizetős API-ra nem váltunk.",style=MaterialTheme.typography.bodySmall)
+        Text("Fotózás vagy képválasztás után automatikusan indul a feldolgozás; a fotó az OpenAI-hoz kerül, a ChatGPT-csomagod keretét használja. Külön fizetős API-ra nem váltunk.",style=MaterialTheme.typography.bodySmall)
         if(!signed) {
             accounts.forEach { account ->
                 OutlinedButton(enabled=!busy,onClick={login(account.getString("client_id"))}) {
@@ -105,28 +127,7 @@ private fun AiReceiptCapture(onSuggestion:(String,String,String)->Unit,onBusy:(B
                 OutlinedButton(enabled=!busy,onClick={runCatching { cameraPending=true;camera.launch(photoUri) }.onFailure {cameraPending=false;message="Nem érhető el kamera."}}) {Text("Fotózás")}
                 OutlinedButton(enabled=!busy,onClick={picker.launch("image/*")}) {Text("Képválasztás")}
             }
-            if(pending!=null) Button(enabled=!busy && model.isNotBlank() && models.any {it.id==model},onClick={
-                val uri=pending ?: return@Button
-                status(true);message="Blokk feldolgozása ChatGPT-vel…";latestSuggestion("","","")
-                scope.launch {
-                    try {
-                        val bytes=withContext(Dispatchers.IO) {
-                            if(Build.VERSION.SDK_INT<28)throw ReceiptAiException("Ehhez a képfeldolgozáshoz Android 9 vagy újabb kell. Használd a helyi felismerést.")
-                            val bitmap=ImageDecoder.decodeBitmap(ImageDecoder.createSource(context.contentResolver,uri)) {decoder,info,_->
-                                val scale=minOf(1.0,2400.0/maxOf(info.size.width,info.size.height))
-                                decoder.setTargetSize((info.size.width*scale).toInt().coerceAtLeast(1),(info.size.height*scale).toInt().coerceAtLeast(1))
-                                decoder.allocator=ImageDecoder.ALLOCATOR_SOFTWARE
-                            }
-                            try { ByteArrayOutputStream().use { output->check(bitmap.compress(Bitmap.CompressFormat.JPEG,88,output));output.toByteArray() } } finally {bitmap.recycle()}
-                        }
-                        val result=ai.analyze(bytes,model)
-                        fun number(n:Double?)=n?.let {String.format(java.util.Locale.US,"%.3f",it)}.orEmpty()
-                        latestSuggestion(result.fuel.orEmpty(),number(result.liters),number(result.paidHuf))
-                        message="Ellenőrizd az üzemanyagot, litert és összeget.\n"+result.explanation
-                        pending=null;photo.delete()
-                    } catch(e:CancellationException){throw e} catch(e:Exception){failure(e)} finally {status(false)}
-                }
-            }) {Text("Feldolgozás ChatGPT-vel")}
+            if(pending!=null && !busy) TextButton(onClick={ pending?.let { process(it) } }) { Text("Újrapróbálás") }
             TextButton(enabled=!busy,onClick={accountDetails=!accountDetails}) { Text("ChatGPT-fiók és modell") }
             if(accountDetails) Row {
                 TextButton(enabled=!busy,onClick={scope.launch {status(true);try {message=if(ai.logout())"Kijelentkezve." else "Helyben kijelentkezve. A távoli visszavonás nem igazolt; ellenőrizd a ChatGPT beállításaiban.";revision++}catch(e:Exception){failure(e)}finally{status(false)}}}) {Text("Kijelentkezés")}
@@ -137,5 +138,5 @@ private fun AiReceiptCapture(onSuggestion:(String,String,String)->Unit,onBusy:(B
         if(busy)LinearProgressIndicator(Modifier.fillMaxWidth())
         if(message.isNotBlank())Text(message,style=MaterialTheme.typography.bodySmall)
     }
-    if(welcome)AlertDialog(onDismissRequest={welcome=false},title={Text("A ChatGPT-csomagodat használod")},text={Text("A blokkfeldolgozás a ChatGPT használati keretéből fogyaszt. A hozzáférést és a limiteket a ChatGPT beállításaiban kezelheted. A fotót csak a feldolgozás gomb megnyomása után küldjük el.")},confirmButton={TextButton(onClick={welcome=false}){Text("Értem")}})
+    if(welcome)AlertDialog(onDismissRequest={welcome=false},title={Text("A ChatGPT-csomagodat használod")},text={Text("A blokkfeldolgozás a ChatGPT használati keretéből fogyaszt. A hozzáférést és a limiteket a ChatGPT beállításaiban kezelheted. A kiválasztott vagy elkészített fotó feldolgozása automatikusan elindul.")},confirmButton={TextButton(onClick={welcome=false}){Text("Értem")}})
 }

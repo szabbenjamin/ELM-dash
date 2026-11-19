@@ -34,3 +34,9 @@ Hivatalos források (2026-10-26):
 - https://developers.openai.com/siwc/token-sharing-open-source/models-and-inference
 - https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations
 - https://developers.openai.com/siwc/ui-ux-guidelines
+
+
+## 0.23.0 — Tankoltam, részleges tankolás és automatikus blokkfeldolgozás
+Felhasználói kérés: Tankoltam gomb, alapértelmezetten üres „Lekattanásig tankoltam (tele tank)” jelölő. Liter/ár/fajta ellenőrzése és mentés továbbra is szükséges; részleges tankolás is menthető. Ismeretlen kezdőszint részleges tankolástól nem válik ismertté. Külön addedLiters tartós számláló, a nyers fogyasztást nem csökkentjük; következő teletank tanulási arányába az összes köztes részleges liter is beleszámít. Részleges rekord nem kalibrál; régi rekordok teletankként olvashatók. Statisztikában minden rekord saját liter/ár mezője számít, a ciklusösszeg nem adódik hozzá újra.
+
+ChatGPT módban képválasztás/fotózás automatikusan elküldi a fotót elemzésre (új, explicit felhasználói engedély); előtte a felület ezt jelzi. Nincs külön Feldolgozás gomb. Hiba után kézi Újrapróbálás, nincs automatikus ismételt keretfogyasztás. Helyi OCR továbbra is választható.

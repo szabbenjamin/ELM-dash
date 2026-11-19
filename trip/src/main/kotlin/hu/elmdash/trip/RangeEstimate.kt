@@ -20,7 +20,7 @@ data class RangeEstimate(val km: Double?, val averageL100: Double?, val basis: S
             val useDaily = usable(daily) && daily.pairedDistanceKm >= 1 && daily.pairedFuelLiters > 0
             val distance = if (useDaily) daily.pairedDistanceKm else recent.sumOf { it.pairedDistanceKm }
             val fuel = if (useDaily) daily.pairedFuelLiters else recent.sumOf { it.pairedFuelLiters }
-            val average = (if (distance >= 1 && fuel > 0) fuel * 100 / distance else null)?.takeIf { it.isFinite() && it > 0 }
+            val average = (if (distance >= 1 && fuel > 0) fuel * 100 / distance * tank.learnedFactor else null)?.takeIf { it.isFinite() && it > 0 }
             val km = tank.remainingLiters?.let { liters -> average?.let { liters * 100 / it } }?.takeIf { it.isFinite() }
             return RangeEstimate(km, average, if (useDaily) "mai átlag" else "mentett utak átlaga",
                 tank.hasGaps || if (useDaily) daily.hasGaps else recent.any { it.hasGaps })

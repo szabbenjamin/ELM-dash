@@ -20,6 +20,7 @@ fun RadioPanel() {
     var name by rememberSaveable { mutableStateOf("") }
     var url by rememberSaveable { mutableStateOf("") }
     var query by rememberSaveable { mutableStateOf("") }
+    var reorder by rememberSaveable { mutableStateOf(false) }
     var favoritesOnly by rememberSaveable { mutableStateOf(false) }
     var formError by remember { mutableStateOf<String?>(null) }
     fun command(action: String, id: String? = null) {
@@ -50,11 +51,16 @@ fun RadioPanel() {
         Text("Térerőkiesés után automatikusan újracsatlakozik. A kézi szünet elsőbbséget élvez.", style = MaterialTheme.typography.bodySmall)
         OutlinedTextField(query, { query = it }, label = { Text("Állomás keresése") }, singleLine = true, modifier = Modifier.fillMaxWidth())
         FilterChip(selected = favoritesOnly, onClick = { favoritesOnly = !favoritesOnly }, label = { Text("Csak kedvencek") })
+        FilterChip(selected=reorder,onClick={reorder=!reorder; if(reorder) { query=""; favoritesOnly=false }},label={Text("Sorrend szerkesztése")})
         val visible = state.stations.filter { RadioStore.matches(it.name, query) && (!favoritesOnly || it.id in state.favorites) }
         if (visible.isEmpty()) Text("Nincs találat. Módosítsd a keresést vagy a kedvencszűrőt.")
         visible.forEach { station ->
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
+                    if(reorder) Row {
+                        TextButton(enabled=state.stations.first().id!=station.id,onClick={store.move(station.id,-1)}) { Text("↑ Feljebb") }
+                        TextButton(enabled=state.stations.last().id!=station.id,onClick={store.move(station.id,1)}) { Text("↓ Lejjebb") }
+                    }
                     Text(station.name, style = MaterialTheme.typography.titleMedium)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { command(DashboardMediaService.ACTION_PLAY, station.id) }) { Text("Hallgatás") }

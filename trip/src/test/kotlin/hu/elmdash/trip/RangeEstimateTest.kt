@@ -20,14 +20,14 @@ class RangeEstimateTest {
     }
     @Test fun dailyRange() {
         val r = RangeEstimate.calculate(tank, summary(100.0, 6.0), emptyList())
-        assertEquals(500.0, r.km!!, 1e-8); assertEquals("mai átlag",r.basis)
+        assertEquals(27.25 / 6 * 100, r.km!!, 1e-8); assertEquals("mai átlag",r.basis)
     }
     @Test fun historyIsWeightedAndSurvivesMidnight() {
         val r = RangeEstimate.calculate(tank, TripSummary(), listOf(record("a",summary(10.0,1.0)),record("b",summary(90.0,5.0))))
-        assertEquals(6.0,r.averageL100!!,1e-8); assertEquals(500.0,r.km!!,1e-8)
+        assertEquals(6.0,r.averageL100!!,1e-8); assertEquals(27.25 / 6 * 100,r.km!!,1e-8)
     }
     @Test fun dailyOverridesHistory() {
-        assertEquals(300.0, RangeEstimate.calculate(tank, summary(10.0,1.0), listOf(record("a",summary(100.0,5.0)))).km!!,1e-8)
+        assertEquals(272.5, RangeEstimate.calculate(tank, summary(10.0,1.0), listOf(record("a",summary(100.0,5.0)))).km!!,1e-8)
     }
     @Test fun missingTankOrAverageNotInvented() {
         assertNull(RangeEstimate.calculate(TankEstimate(),summary(100.0,6.0),emptyList()).km)
@@ -39,6 +39,6 @@ class RangeEstimateTest {
         assertEquals(0.0,RangeEstimate.calculate(tank.copy(consumedLiters = 45.0),summary(100.0,6.0),emptyList()).km!!,0.0)
     }
     @Test fun unpairedDistanceDoesNotInflateRange() {
-        assertEquals(500.0,RangeEstimate.calculate(tank,summary(100.0,6.0).copy(distanceKm = 500.0,hasGaps = true),emptyList()).km!!,1e-8)
+        assertEquals(27.25 / 6 * 100,RangeEstimate.calculate(tank,summary(100.0,6.0).copy(distanceKm = 500.0,hasGaps = true),emptyList()).km!!,1e-8)
     }
 }

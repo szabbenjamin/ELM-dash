@@ -47,6 +47,7 @@ internal fun TankCard(tank: TankEstimate, range: RangeEstimate, onOpen: (() -> U
             Text(if (range.km != null) "${value(range.averageL100)} l/100 km • ${range.basis}" + if (range.uncertain) " • bizonytalan" else ""
                 else if (tank.remainingLiters == null) "Előbb jelöld a teletankolást."
                 else "Legalább 1 km fogyasztással együtt mért szakasz szükséges.", fontSize = 12.sp)
+            Text("Óvatos becslés: ${value(tank.reserveLiters)} l tartalék levonva. Tanult szorzó: ${value(tank.learnedFactor, 3)}× (${tank.learningSamples} értékelhető tankolás).", fontSize = 12.sp)
             tank.percent?.let { LinearProgressIndicator(progress = { (it / 100).toFloat() }, modifier = Modifier.fillMaxWidth()) }
             Text(if (tank.hasGaps) "Bizonytalan: volt nem megfigyelt fogyasztás. A valós szint alacsonyabb is lehet."
                 else "45 literes Kalos-tank. A teletankolástól megfigyelt fogyasztás alapján, nem tankszenzorból.",
@@ -61,7 +62,6 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
     val log = state.journal
     var resetDialog by rememberSaveable { mutableStateOf(false) }
     var dailyExpanded by rememberSaveable { mutableStateOf(false) }
-    var refuelDialog by rememberSaveable { mutableStateOf(false) }
     var exportMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -80,6 +80,7 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
     }
     LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
         item { Text("Napló", fontSize = 26.sp, fontWeight = FontWeight.SemiBold) }
+        item { StatisticsPanel(log) }
         item {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -102,18 +103,6 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
         if (log.active != null || state.simulated) item {
             OutlinedButton(onClick = { resetDialog = true }) { Text("Útmérés nullázása") }
         }
-        item { TankCard(log.tank, state.range) }
-        item {
-            Button(onClick = { refuelDialog = true }, enabled = !state.simulated, modifier = Modifier.fillMaxWidth()) {
-                Text("Teletankoltam")
-            }
-            if (state.simulated) Text("Demó alatt a valódi tank és napló nem módosul.", fontSize = 12.sp)
-            Text("Csak akkor jelöld, amikor valóban tele lett. A százalék az app nélkül megtett utak és a fogyasztásbecslés hibáját nem tudja kijavítani.",
-                color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-        }
-        log.tank.fullAtMs?.let { at -> item {
-            Text("Utolsó teletankolás: ${date(at)}\nAzóta megfigyelt fogyasztás: ${value(log.tank.consumedLiters, 2)} l", fontSize = 13.sp)
-        } }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Utazások", fontWeight = FontWeight.Bold, fontSize = 20.sp)
@@ -128,35 +117,13 @@ internal fun JournalScreen(controller: DashboardController, state: DashboardStat
             Text("Még nincs naplózott út. A következő valódi OBD-mérés automatikusan ide kerül.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         items(log.journeys, key = { it.id }) { JourneyCard(it) }
-        if (log.refills.isNotEmpty()) item { Text("Teletankolások", fontWeight = FontWeight.Bold, fontSize = 20.sp) }
-        items(log.refills, key = { "refill:${it.id}" }) { refill ->
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(date(refill.atMs), fontWeight = FontWeight.SemiBold)
-                    Text(refill.fuelName ?: "Benzintípus nincs megadva", fontWeight = FontWeight.SemiBold)
-                    Text("${value(refill.pumpedLiters, 2)} liter  •  ${value(refill.totalPaidHuf, 0)} Ft", fontSize = 24.sp, color = MaterialTheme.colorScheme.primary)
-                    refill.pumpedLiters?.let { Text("Kúton betöltve: ${value(it, 2)} l", fontSize = 13.sp) }
-                    refill.totalPaidHuf?.let { Text("Fizetve: ${value(it, 0)} Ft • ${value(refill.hufPerLiter, 1)} Ft/l", fontSize = 13.sp) }
-                    refill.differenceLiters?.let { difference ->
-                        Text("Tankolás − becslés: ${value(difference, 2)} l (${value(refill.differencePercent)}%). Pozitív: az app kevesebbet becsült.", fontSize = 12.sp)
-                        Text(if (refill.previousHasGaps) "Adathiány miatt ez nem tiszta becslési hiba; kalibrációra nem használható."
-                            else "Javasolt szorzó a jelenlegi korrekcióhoz: ${value(refill.suggestedMultiplier, 3)}. Nem alkalmazzuk automatikusan.", fontSize = 12.sp)
-                    }
-                    refill.previousConsumedLiters?.let {
-                        Text("Előző teletankolás óta megfigyelt: ${value(it, 2)} l" + if (refill.previousHasGaps) " • adathiányos" else "", fontSize = 12.sp)
-                    }
-                }
-            }
-        }
+
     }
     if (resetDialog) AlertDialog(onDismissRequest = { resetDialog = false }, title = { Text("Új mérés indítása?") },
         text = { Text("Az aktuális út lezárul és új mérés kezdődik. A napi összesítés és a mentett utak megmaradnak.") },
         confirmButton = { TextButton(onClick = { controller.resetTrip(); resetDialog = false }) { Text("Nullázás") } },
         dismissButton = { TextButton(onClick = { resetDialog = false }) { Text("Mégse") } })
-    if (refuelDialog) RefuelDialog(onDismiss = { refuelDialog = false }, onSave = { name, liters, total ->
-        controller.markFullTank(liters, total, name)
-        refuelDialog = false
-    })
+
 
 }
 
